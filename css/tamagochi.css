@@ -1,0 +1,90 @@
+
+/** FULLSCREEN **/
+HTML, BODY, #TGCMAP {
+	width: 100%;
+}
+HTML, BODY, .MAINDIV, .MAINSECTION, #MAPCONTENT, #HOMECONTENT, #TGCMAPDIV, #TGCMAP, #MAINVIEW {
+	height: 100%;
+	min-height: 100%;
+}
+
+#TGCMAPDIV {
+	position: relative;
+	top: -4em;
+}
+
+/** MENU TOGGLES **/ 
+.tgc-content-menu-toggles .tgc-left-toggle {
+	position: absolute;
+	top: 1em;
+	left: 1em;
+}
+
+.tgc-content-menu-toggles .tgc-right-toggle {
+	position: absolute;
+	top: 1em;
+	right: 1em;
+}
+
+
+.tgc-sidebar-menu-toggles .tgc-left-toggle {
+	position: absolute;
+	z-index: 100!important;
+	top: 0.5em;
+	right: 0.5em;
+}
+
+.tgc-sidebar-menu-toggles .tgc-right-toggle {
+	position: absolute;
+	z-index: 100!important;
+	top: 0.5em;
+	right: 0.5em;
+}
+
+/** TODO: ugly button position :( **/
+.tgc-content-menu-toggles i.material-icons, .tgc-sidebar-menu-toggles i.material-icons  {
+	margin-top: 0.50em;
+}
+
+
+/** **/
+#tgc-chat-input input {
+	padding-left: 7.5em;
+	padding-right: 7.5em;
+	color: #333;
+}
+
+/** **/
+#VERSION {
+	display: block;
+	position: absolute;
+	bottom: 1em;
+	right: 3em;
+	opacity: 0.4137;
+}
+
+/** **/
+md-dialog-content > p {
+	padding: 2em 1.5em 0;
+}
+
+/** Spell Dialog **/
+.spell-row {
+	
+}
+
+.spell-row ol {
+	list-style: none;
+}
+
+.spell-row li {
+	display: inline-block;
+}
+
+.spell-row li.selected-rune  {
+	background: red;
+}
+
+.spell-row li button {
+	background: gray;
+}
