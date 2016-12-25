@@ -60,8 +60,6 @@ final class TGC_Commands extends GWS_Commands
 			$payload = json_encode(array(
 				'player' => $player->fullPlayerDTO($user),
 				'welcome_message' => $this->tgc->cfgWelcomeMessage(),
-				'seed' => TGC_Global::$SEED,
-				'tick' => TGC_Global::$TICK,
 				'server_version' => $this->tgc->getVersion(),
 			));
 			GWS_Global::sendCommand($user, 'TGC_HELO', self::payload($payload, $mid));
@@ -80,20 +78,10 @@ final class TGC_Commands extends GWS_Commands
 				$p->sendCommand('TGC_CHAT', $payload);
 			}, $payload);
 			$player->sendCommand('TGC_CHAT', $payload);
-			if (!($p = self::playerNamed($payload)))
-			{
-				return $player->sendError('ERR_UNKNOWN_PLAYER');
-			}
-			$payload = json_encode(array(
-					'player' => $p->otherPlayerDTO(),
-					'tick' => TGC_Global::$TICK,
-			));
-			GWS_Global::sendCommand($user, 'TGC_HELO', self::payload($payload, $mid));
 		}
 		catch (Exception $e) {
 			GWS_Global::sendError($user, $e->toString());
 		}
-		
 	}
 	
 	public function cmd_tgcPlayer(GWF_User $user, $payload, $mid)
@@ -115,75 +103,93 @@ final class TGC_Commands extends GWS_Commands
 		}
 	}
 	
-	
-	/// OOOOOOOOOOOOLD
-	
-	public function cmd_pos(TGC_Player $player, $payload, $mid)
+	public function cmd_tgcPos(GWF_User $user, $payload, $mid)
 	{
-		$coords = json_decode($payload);
-		
-		$player->moveTo($coords->lat, $coords->lng);
-		
-		$payload = json_encode(array(
-			'player' => array_merge(array('name' => $player->getName(), 'hash' => $player->getStatsHash())),
-			'pos' => array(
-				'lat' => $coords->lat,
-				'lng' => $coords->lng,
-			),
-		));
-
-		$player->sendCommand('POS', $payload);
-		$player->forNearMe(function($p, $payload) {
-			$p->sendCommand('POS', $payload);
-		}, $payload);
-		
-// 		player->initialPositionUpdate();
+		try {
+			$player = self::player($user);
+			$payload = json_decode($payload);
+			$player->moveTo($payload->lat, $payload->lng);
+			$payload = json_encode(array(
+				'player' => $player->positionDTO(),
+			));
+			$player->sendCommand('TGC_POS', $payload);
+			$player->forNearMe(function($p, $payload) {
+				$p->sendCommand('TGC_POS', $payload);
+			}, $payload);
+		}
+		catch (Exception $e) {
+			GWS_Global::sendError($user, $e->toString());
+		}
 	}
 
-	public function cmd_fight(TGC_Player $player, $payload, $mid)
+	public function cmd_tgcFight(GWF_User $user, $payload, $mid)
 	{
-		if (!($p = TGC_ServerUtil::getPlayerForName($payload)))
-		{
-			return $player->sendError('ERR_UNKNOWN_PLAYER');
+		try {
+			$player = self::player($user);
+			if (!($p = self::playerNamed($payload)))
+			{
+				return $player->sendError('ERR_UNKNOWN_PLAYER');
+			}
+			$attack = new TGC_Attack($player, $p, $mid);
+			$attack->dice('fighter');
 		}
-		$attack = new TGC_Attack($player, $p, $mid);
-		$attack->dice('fighter');
-	}
-	
-	public function cmd_attack(TGC_Player $player, $payload, $mid)
-	{
-		if (!($p = TGC_ServerUtil::getPlayerForName($payload)))
-		{
-			return $player->sendError('ERR_UNKNOWN_PLAYER');
-		}
-	
-		$attack = new TGC_Attack($player, $p, $mid);
-		$attack->dice('ninja');
-	}
-	
-	public function cmd_brew(TGC_Player $player, $payload, $mid)
-	{
-		$data = json_decode($payload);
-		if (!($p = TGC_ServerUtil::getPlayerForName($data->target)))
-		{
-			return $player->sendError('ERR_UNKNOWN_PLAYER');
-		}
-		if ($potion = TGC_Potion::factory($player, $p, 'BREW', $data->runes, $mid))
-		{
-			$potion->brew();
+		catch (Exception $e) {
+			GWS_Global::sendError($user, $e->toString());
 		}
 	}
 	
-	public function cmd_cast(TGC_Player $player, $payload, $mid)
+	public function cmd_tgcAttack(GWF_User $user, $payload, $mid)
 	{
-		$data = json_decode($payload);
-		if (!($p = TGC_ServerUtil::getPlayerForName($data->target)))
-		{
-			return $player->sendError('ERR_UNKNOWN_PLAYER');
+		try {
+			$player = self::player($user);
+			if (!($p = self::playerNamed($payload)))
+			{
+				return $player->sendError('ERR_UNKNOWN_PLAYER');
+			}
+		
+			$attack = new TGC_Attack($player, $p, $mid);
+			$attack->dice('ninja');
 		}
-		if ($spell = TGC_Spell::factory($player, $p, 'CAST', $data->runes, $mid))
-		{
-			$spell->cast();
+		catch (Exception $e) {
+			GWS_Global::sendError($user, $e->toString());
+		}
+	}
+	
+	public function cmd_tgcBrew(GWF_User $user, $payload, $mid)
+	{
+		try {
+			$player = self::player($user);
+			$data = json_decode($payload);
+			if (!($p = self::playerNamed($data->target)))
+			{
+				return $player->sendError('ERR_UNKNOWN_PLAYER');
+			}
+			if ($potion = TGC_Potion::factory($player, $p, 'BREW', $data->runes, $mid))
+			{
+				$potion->brew();
+			}
+		}
+		catch (Exception $e) {
+			GWS_Global::sendError($user, $e->toString());
+		}
+	}
+	
+	public function cmd_tgcCast(GWF_User $user, $payload, $mid)
+	{
+		try {
+			$player = self::player($user);
+			$data = json_decode($payload);
+			if (!($p = self::playerNamed($data->target)))
+			{
+				return $player->sendError('ERR_UNKNOWN_PLAYER');
+			}
+			if ($spell = TGC_Spell::factory($player, $p, 'CAST', $data->runes, $mid))
+			{
+				$spell->cast();
+			}
+		}
+		catch (Exception $e) {
+			GWS_Global::sendError($user, $e->toString());
 		}
 	}
 }

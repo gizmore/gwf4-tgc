@@ -45,9 +45,9 @@ final class TGC_Player extends GDO
 		);
 	}
 	
-	public function fullPlayerDTO(GWF_User $user)
+	public function fullPlayerDTO()
 	{
-		return array_merge($this->playerDTO(), $this->ownPlayerDTO(), $this->userDTO($user));
+		return array_merge($this->playerDTO(), $this->ownPlayerDTO(), $this->userDTO($this));
 	}
 	
 	public function otherPlayerDTO()
@@ -216,16 +216,21 @@ final class TGC_Player extends GDO
 	###########
 	public function moveTo($newLat, $newLng)
 	{
+		$newLat = (float)$newLat;
+		$newLng = (float)$newLng; 
+		if ( (!$newLat) || (!$newLng) || $newLat < -90 || $newLat > 90 ||$newLng < -180 || $newLng > 180)
+		{
+			return false;
+		}
 		$this->setPosition($newLat, $newLng);
 		$this->moved = true;
+		return true;
 	}
 	
 	public function setPosition($lat, $lng)
 	{
-		if ($lat && $lng) {
-			$this->lat = $lat;
-			$this->lng = $lng;
-		}
+		$this->lat = $lat;
+		$this->lng = $lng;
 	}
 	
 	public function getStatsHash()

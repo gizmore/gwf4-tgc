@@ -42,7 +42,7 @@ TGC.service('TGCCommandSrvc', function($rootScope, $injector, ErrorSrvc, Websock
 	
 	CommandSrvc.tgcFight = function(player) {
 		console.log('CommandSrvc.fight()', player);
-		return WebsocketSrvc.sendCommand('fight', player.name(), false);
+		return WebsocketSrvc.sendCommand('tgcFight', player.name(), false);
 	};
 
 	CommandSrvc.tgcAttack = function(player) {

@@ -39,10 +39,10 @@ TGC.service('PlayerDlg', function($q, $mdDialog, ErrorSrvc, TGCCommandSrvc, Play
 				}
 			};
 			$scope.fight = function() {
-				TGCCommandSrvc.fight(player).then($scope.afterFight);
+				TGCCommandSrvc.tgcFight(player).then($scope.afterFight);
 			};
 			$scope.attack = function() {
-				TGCCommandSrvc.attack(player).then($scope.afterFight);
+				TGCCommandSrvc.tgcAttack(player).then($scope.afterFight);
 			};
 			$scope.brew = function() {
 				$scope.closeDialog();

@@ -55,6 +55,7 @@ function TGC_Player(json) {
 			}
 		}
 		this.moveValidTo(json);
+		return this;
 	};
 
 	this.moveValidTo = function(json) {
