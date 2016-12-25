@@ -1,6 +1,6 @@
 'use strict';
-var TGC = angular.module('tgc');
-TGC.service('PlayerSrvc', function($rootScope, CommandSrvc) {
+angular.module('gwf4')
+.service('PlayerSrvc', function(TGCCommandSrvc, CommandSrvc) {
 	
 	var PlayerSrvc = this;
 	
@@ -9,6 +9,13 @@ TGC.service('PlayerSrvc', function($rootScope, CommandSrvc) {
 	///////////
 	PlayerSrvc.OWN = null;
 	PlayerSrvc.CACHE = {};
+	
+	PlayerSrvc.updatePlayerCache = function(json) {
+		var name = json.user_name;
+		var cache = PlayerSrvc.CACHE;
+		cache[name] = !cache[name] ? new TGC_Player(json) : cache[name].update(json);
+		return cache[name];
+	};
 
 	PlayerSrvc.getOrAddPlayer = function(name, player) {
 		console.log("PlayerSrvc.getOrAddPlayer()", name);
@@ -82,11 +89,10 @@ TGC.service('PlayerSrvc', function($rootScope, CommandSrvc) {
 	// Lazy //
 	//////////
 	PlayerSrvc.withStats = function(player) {
-		return CommandSrvc.player(player).then(function(payload){
-			console.log(payload);
-			player.JSON = JSON.parse(payload).player;
-			return player;
+		return CommandSrvc.tgcPlayer(player).then(function(payload) {
+			return player.update(JSON.parse(payload));
 		});
 	};
 	
+	return PlayerSrvc;
 });

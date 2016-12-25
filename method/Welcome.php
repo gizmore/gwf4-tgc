@@ -10,7 +10,7 @@ final class Tamagochi_Welcome extends GWF_Method
 	{
 		$tVars = array(
 		);
-		return $this->module->templatePHP('welcome.php', $tVars);
+		return $this->module->templatePHP('tamagochi-welcome.php', $tVars);
 	}
 
 }

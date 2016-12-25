@@ -1,7 +1,12 @@
 'use strict';
-var TGC = angular.module('tgc');
-TGC.service('SpellUtil', function() {
+angular.module('gwf4')
+.service('SpellUtil', function() {
 	
 	var SpellUtil = this;
 
+
+	
+	
+	
+	return SpellUtil;
 });

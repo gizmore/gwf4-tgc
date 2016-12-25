@@ -1,6 +1,6 @@
 'use strict';
-var TGC = angular.module('tgc');
-TGC.service('SpellDlg', function($q, $mdDialog, ErrorSrvc, CommandSrvc, PlayerSrvc) {
+var TGC = angular.module('gwf4');
+TGC.service('SpellDlg', function($q, $mdDialog, ErrorSrvc, TGCCommandSrvc, PlayerSrvc) {
 	
 	var SpellDlg = this;
 	
@@ -15,7 +15,7 @@ TGC.service('SpellDlg', function($q, $mdDialog, ErrorSrvc, CommandSrvc, PlayerSr
 			$scope.data = {
 				player: player,
 				type: type,
-				runes: window.TGCConfig.runes,
+				runes: window.TGC_CONFIG.runes,
 				selected: [],
 				selectedIDs: [],
 			}
@@ -24,10 +24,10 @@ TGC.service('SpellDlg', function($q, $mdDialog, ErrorSrvc, CommandSrvc, PlayerSr
 //				resolve();
 			};
 			$scope.brew = function() {
-				CommandSrvc.brew(player, $scope.spelltext()).then($scope.closeDialog);
+				TGCCommandSrvc.brew(player, $scope.spelltext()).then($scope.closeDialog);
 			};
 			$scope.cast = function() {
-				CommandSrvc.cast(player, $scope.spelltext()).then($scope.closeDialog);
+				TGCCommandSrvc.cast(player, $scope.spelltext()).then($scope.closeDialog);
 			};
 			$scope.spelltext = function() {
 				return $scope.data.selected.join(',');
@@ -42,7 +42,7 @@ TGC.service('SpellDlg', function($q, $mdDialog, ErrorSrvc, CommandSrvc, PlayerSr
 		}
 		var parentEl = angular.element(document.body);
 		$mdDialog.show({
-			templateUrl: '/tpl/tamagochi/js/tpl/spell_dlg.html',
+			templateUrl: GWF_WEB_ROOT+'module/Tamagochi/js/tpl/spell_dlg.html',
 			locals: {
 				player: player,
 				type: type,

@@ -1,22 +1,37 @@
 <?php
 final class TGC_Global
 {
+ 	public static $TICK = 0;
+ 	private static $INITIAL_SEED = 0;
 	public static $PLAYERS = array();
+	public static $SEED = 31337;
 	
-	public static function addPlayer(TGC_Player $player)
+	public static function init($seed)
 	{
-		self::$PLAYERS[$player->getName()] = $player;
+		self::$TICK = 0;
+		self::$SEED = self::$INITIAL_SEED = $seed;
+		self::$PLAYERS = array();
 	}
 	
-	public static function removePlayer(TGC_Player $player, $reason='NO_REASON')
+	public static function rand($min, $max)
 	{
-		if (!isset(self::$PLAYERS[$player->getName()])) {
-			return false;
+	}
+	
+	public static function removePlayer($name)
+	{
+		unset(self::$PLAYERS[$name]);
+	}
+	
+	public static function getOrCreatePlayer(GWF_User $user)
+	{
+		$name = $user->displayName();
+		if (!($player = self::getOrLoadPlayer($name)))
+		{
+			$player = self::createPlayer($user);
+			self::$PLAYERS[$name] = $player;
 		}
-		
-		$player->disconnect($reason);
-		unset(self::$PLAYERS[$player->getName()]);
-		return true;
+		$player->setUser($user);
+		return $player;
 	}
 	
 	public static function getPlayer($name)
@@ -26,20 +41,30 @@ final class TGC_Global
 	
 	public static function getOrLoadPlayer($name)
 	{
-		if (false !== ($player = self::getPlayer($name))) {
+		if ($player = self::getPlayer($name))
+		{
 			return $player;
 		}
-		return self::loadPlayer($name);
+		if ($player = self::loadPlayer($name))
+		{
+			self::$PLAYERS[$name] = $player;
+			return $player;
+		}
+		return false;
 	}
 	
-
 	###############
 	### Private ###
 	###############
+	private static function createPlayer(GWF_User $user)
+	{
+		return TGC_Player::createPlayer($user);
+	}
+	
 	private static function loadPlayer($name)
 	{
 		$ename = GDO::escape($name);
-		return GDO::table('TGC_Player')->selectFirstObject('*, user_name, user_gender', "user_name='$ename'", '', '', array('user'));
+		return GDO::table('TGC_Player')->selectFirstObject('*, user_name, user_gender, user_guest_name', "user_name='$ename'", '', '', array('user'));
 	}
 	
 }

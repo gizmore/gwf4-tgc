@@ -1,14 +1,12 @@
-'use strict';
-window.TGC = window.TGC || {};
-window.TGC.Player = function(json, userJSON, secret) {
-	
-	console.log('new TGC.Player()', json, userJSON);
-	
-	this.JSON = json;
-	this.USER = userJSON;
-	this.SECRET = secret;
-	
+function TGC_Player(json) {
+
+	this.user = new GWF_User(json);
 	this.position = null;
+	this.hasMoved = false;
+	this.JSON = json;
+	
+	this.name = function() { return this.user.name(); };
+	this.displayName = function() { return this.user.displayName(); };
 	
 	this.lat = function() { return this.position.lat(); };
 	this.lng = function() { return this.position.lng(); };
@@ -16,16 +14,11 @@ window.TGC.Player = function(json, userJSON, secret) {
 	this.latLng = function() { return this.position; };
 	this.hasPosition = function() { return this.position !== null; };
 	this.hasStats = function() { return this.JSON.fl !== undefined; };
-	
-	this.user = function() { return this.USER; };
-	this.secret = function() { return this.SECRET; };
 
 	this.id = function(id) { if (id) this.JSON.p_uid = id; return this.JSON.p_uid; };
 	this.isOwn = function() { return this.id() > 0; };
 
 	this.hash = function(hash) { if (hash) this.JSON.hash = hash; return this.JSON.hash; };
-	this.name = function(name) { if (name) this.JSON.name = name; return this.JSON.name; };
-	this.gender = function(gender) { if (gender) this.JSON.gender = gender; return this.JSON.gender; };
 
 	this.mode = function(mode) { if (mode) this.JSON.m = mode; return this.JSON.m; };
 	this.color = function(color) { if (color) this.JSON.c = color; return this.JSON.c; };
@@ -48,10 +41,31 @@ window.TGC.Player = function(json, userJSON, secret) {
 	this.lastElementChange = function(lastChange) { if (lastChange) this.JSON.ec = lastChange; return this.JSON.ec };
 	
 	this.levelName = function(level) {
-		return window.TGCConfig.levels[level];
+		return window.TGC_Config.levels[level];
 	};
 	
 	this.lastSlap = function() {};
+	
+	this.update = function(json) {
+		for (var i in json) {
+			if (json.hasOwnProperty(i)) {
+				if (i !== 'lat' && i !== 'lng') {
+					this.JSON[i] = json[i];
+				}
+			}
+		}
+		this.moveValidTo(json);
+	};
+
+	this.moveValidTo = function(json) {
+		if (json.lat && json.lng) {
+			this.moveTo(json.lat, json.lng);
+			this.moved = true;
+		}
+	};
+	
+	/** Init **/
+	this.moveValidTo(json);
 	
 	/** SPELLS **/
 	this.NO_SCROLL_LOCK = undefined;

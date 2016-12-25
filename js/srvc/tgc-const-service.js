@@ -1,12 +1,11 @@
 'use strict';
-
-var TGC = angular.module('tgc');
+var TGC = angular.module('gwf4');
 TGC.service('ConstSrvc', function() {
 
 	var ConstSrvc = this;
 
 	ConstSrvc.IN_LOGIN = false;
-	ConstSrvc.inLogin = function(bool) { if (bool !== undefined) ConstSrvc.IN_LOGIN = bool; return ConstSrvc.IN_LOGIN };
+	ConstSrvc.inLogin = function(bool) { if (bool !== undefined) ConstSrvc.IN_LOGIN = bool; return ConstSrvc.IN_LOGIN; };
 	
 	ConstSrvc.SKILL_SHAPE_RADIUS_LAT_MIN = 0.045;
 	ConstSrvc.SKILL_SHAPE_RADIUS_LNG_MIN = 0.045;
@@ -24,11 +23,6 @@ TGC.service('ConstSrvc', function() {
 		}
 	};
 	
-	ConstSrvc.initLevels(window.TGCConfig.levels);
-	
-	ConstSrvc.websocketURL = function() {
-		return TGCConfig.wss_url;
-	};
-	
+	ConstSrvc.initLevels(window.TGC_CONFIG.levels);
 
 });

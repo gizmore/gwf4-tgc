@@ -1,6 +1,6 @@
 'use strict';
-var TGC = angular.module('tgc');
-TGC.service('PlayerDlg', function($q, $mdDialog, ErrorSrvc, CommandSrvc, PlayerSrvc, SpellDlg) {
+var TGC = angular.module('gwf4');
+TGC.service('PlayerDlg', function($q, $mdDialog, ErrorSrvc, TGCCommandSrvc, PlayerSrvc, SpellDlg) {
 	
 	var PlayerDlg = this;
 	
@@ -39,10 +39,10 @@ TGC.service('PlayerDlg', function($q, $mdDialog, ErrorSrvc, CommandSrvc, PlayerS
 				}
 			};
 			$scope.fight = function() {
-				CommandSrvc.fight(player).then($scope.afterFight);
+				TGCCommandSrvc.fight(player).then($scope.afterFight);
 			};
 			$scope.attack = function() {
-				CommandSrvc.attack(player).then($scope.afterFight);
+				TGCCommandSrvc.attack(player).then($scope.afterFight);
 			};
 			$scope.brew = function() {
 				$scope.closeDialog();
@@ -58,7 +58,7 @@ TGC.service('PlayerDlg', function($q, $mdDialog, ErrorSrvc, CommandSrvc, PlayerS
 		$mdDialog.show({
 //			parent: document.getElementById('TGCMAP'),
 //			targetEvent: $event,
-			templateUrl: '/tpl/tamagochi/js/tpl/player_dlg.html',
+			templateUrl: GWF_WEB_ROOT+'module/Tamagochi/js/tpl/player_dlg.html',
 			locals: {
 				player: player
 			},

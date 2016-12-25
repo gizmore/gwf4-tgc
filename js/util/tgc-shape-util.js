@@ -1,6 +1,6 @@
 'use strict';
-var TGC = angular.module('tgc');
-TGC.service('ShapeUtil', function(ConstSrvc, ColorUtil) {
+angular.module('gwf4')
+.service('ShapeUtil', function(ConstSrvc, ColorUtil) {
 	
 	var ShapeUtil = this;
 	
@@ -11,7 +11,7 @@ TGC.service('ShapeUtil', function(ConstSrvc, ColorUtil) {
 	};
 	
 	ShapeUtil.initShape = function(player, map) {
-		console.log('ShapeUtil.initShape()', player.name());
+		console.log('ShapeUtil.initShape()', player.user.displayName());
 		
 		if ((!player.hasStats()) || (!player.hasPosition())) {
 			return;
@@ -57,4 +57,5 @@ TGC.service('ShapeUtil', function(ConstSrvc, ColorUtil) {
 		player.shape.setMap(map);
 	};
 
+	return ShapeUtil;
 });
