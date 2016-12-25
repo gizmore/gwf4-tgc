@@ -3,6 +3,7 @@ require_once 'TGC_Global.php';
 
 final class TGC_Commands extends GWS_Commands
 {
+	private $ai;
 	private $tgc;
 	private $acc;
 	
@@ -16,6 +17,8 @@ final class TGC_Commands extends GWS_Commands
 		$this->acc = GWF_Module::loadModuleDB('Account', true, true);
 // 		$this->changeNick = $this->modAccount->getMethod('ChangeGuestNickname');
 		TGC_Global::init(31337);
+		$this->ai = new TGC_AI();
+		$this->ai->init($this);
 	}
 	
 	#############
@@ -23,7 +26,7 @@ final class TGC_Commands extends GWS_Commands
 	#############
 	public function timer()
 	{
-		echo ".";
+		$this->ai->tick(TGC_Global::tick());
 	}
 	
 	##############
@@ -58,7 +61,7 @@ final class TGC_Commands extends GWS_Commands
 			$player->setVar('user_guest_name', preg_replace('/[^_a-z0-9]*/i', '', $payload->user_guest_name));
 			$player->moveTo($payload->lat, $payload->lng);
 			$payload = json_encode(array(
-				'player' => $player->fullPlayerDTO($user),
+				'player' => $player->ownPlayerDTO($user),
 				'welcome_message' => $this->tgc->cfgWelcomeMessage(),
 				'server_version' => $this->tgc->getVersion(),
 			));
@@ -110,7 +113,7 @@ final class TGC_Commands extends GWS_Commands
 			$payload = json_decode($payload);
 			$player->moveTo($payload->lat, $payload->lng);
 			$payload = json_encode(array(
-				'player' => $player->positionDTO(),
+				'player' => $player->userPositionDTO(),
 			));
 			$player->sendCommand('TGC_POS', $payload);
 			$player->forNearMe(function($p, $payload) {

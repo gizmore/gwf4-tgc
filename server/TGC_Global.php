@@ -1,20 +1,48 @@
 <?php
 final class TGC_Global
 {
- 	public static $TICK = 0;
- 	private static $INITIAL_SEED = 0;
-	public static $PLAYERS = array();
+	private static $INITIAL_SEED = 0;
 	public static $SEED = 31337;
+	public static $TICK = 0;
+	public static $BOTS = array(), $HUMANS = array(), $PLAYERS = array();
+	public static $AVERAGE = array();
 	
 	public static function init($seed)
 	{
 		self::$TICK = 0;
-		self::$SEED = self::$INITIAL_SEED = $seed;
-		self::$PLAYERS = array();
+		self::$INITIAL_SEED = self::$SEED = $seed;
+		self::$BOTS = array(); self::$HUMANS = array(); self::$PLAYERS = array();
+	}
+
+	############
+	### Game ###
+	############
+	public static function tick()
+	{
+		self::$AVERAGE = array();
+		return self::$TICK++;
 	}
 	
 	public static function rand($min, $max)
 	{
+		return GWF_Random::rand($min, $max);
+	}
+	
+	###############
+	### Players ###
+	###############
+	public static function addPlayer(TGC_Player $player)
+	{
+		if ($player->isBot())
+		{
+			self::$BOTS[] = $player;
+		}
+		else
+		{
+			self::$HUMANS[] = $player;
+		}
+	
+		self::$PLAYERS[$player->getName()] = $player;
 	}
 	
 	public static function removePlayer($name)
@@ -52,10 +80,7 @@ final class TGC_Global
 		}
 		return false;
 	}
-	
-	###############
-	### Private ###
-	###############
+
 	private static function createPlayer(GWF_User $user)
 	{
 		return TGC_Player::createPlayer($user);
@@ -63,8 +88,24 @@ final class TGC_Global
 	
 	private static function loadPlayer($name)
 	{
-		$ename = GDO::escape($name);
-		return GDO::table('TGC_Player')->selectFirstObject('*, user_name, user_gender, user_guest_name', "user_name='$ename'", '', '', array('user'));
+		return TGC_Player::getByName($name);
 	}
 	
+	###############
+	### Average ###
+	###############
+	public static function average($field)
+	{
+		if (!isset(self::$AVERAGE[$field]))
+		{
+			$total = 1;
+			$count = count(self::$HUMANS) + 1;
+			foreach (self::$HUMANS as $player)
+			{
+				$total += $player->power($field);
+			}
+			self::$AVERAGE[$field] = $total / $count;
+		}
+		return self::$AVERAGE[$field];
+	}
 }

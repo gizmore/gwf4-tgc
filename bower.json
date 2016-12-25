@@ -1,0 +1,26 @@
+{
+  "name": "Tamagochi",
+  "homepage": "https://github.com/gizmore/gwf4-tgc",
+  "authors": [
+    "gizmore <gizmore@wechall.net>"
+  ],
+  "description": "TGC server and client",
+  "main": "Module_Tamagochi.php",
+  "keywords": [
+    "Game",
+    "Websocket",
+    "Maps"
+  ],
+  "license": "PROPERITARY",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "howler.js": "howler#^2.0.2"
+  }
+}

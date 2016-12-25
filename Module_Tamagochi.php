@@ -3,9 +3,11 @@ require_once 'util/TGC_Const.php';
 require_once 'util/TGC_Logic.php';
 require_once 'util/TGC_Position.php';
 require_once 'TGC_Player.php';
+require_once 'TGC_Bot.php';
 require_once 'TGC_Attack.php';
 require_once 'spells/TGC_Spell.php';
 require_once 'spells/TGC_Potion.php';
+require_once 'server/TGC_AI.php';
 /**
  * @author gizmore
  * @license properitary / TGC
@@ -18,8 +20,8 @@ final class Module_Tamagochi extends GWF_Module
 	##############
 	### Module ###
 	##############
-	public function getVersion() { return 4.04; }
-	public function getClasses() { return array('TGC_Player'); }
+	public function getVersion() { return 4.05; }
+	public function getClasses() { return array('TGC_Player', 'TGC_Bot'); }
 	public function getDefaultPriority() { return 64; }
 	public function getDefaultAutoLoad() { return true; }
 	public function onLoadLanguage() { return $this->loadLanguage('lang/tamagochi'); }
@@ -28,7 +30,11 @@ final class Module_Tamagochi extends GWF_Module
 	##############
 	### Config ###
 	##############
-	public function cfgWelcomeMessage() { return $this->getModuleVar('tgc_welcome_msg', 'TGCv4.04'); }
+	public function cfgWelcomeMessage() { return $this->getModuleVar('tgc_welcome_msg', 'TGCv1'); }
+	public function cfgMaxBots() { return $this->getModuleVarInt('tgc_max_bots', '64'); }
+	public function cfgMaxLoserBots() { return $this->getModuleVarInt('tgc_max_loser_bots', '50'); }
+	public function cfgMaxWinnerBots() { return $this->getModuleVarInt('tgc_max_winner_bots', '25'); }
+	public function cfgMaxNimdaBots() { return $this->getModuleVarInt('tgc_max_nimda_bots', '2'); }
 	
 	###############
 	### Startup ###
@@ -37,7 +43,7 @@ final class Module_Tamagochi extends GWF_Module
 	{
 		self::$instance = $this;
 		
-		if (!Common::isCLI())
+		if ( (!Common::isCLI()) && (!GWF_Website::isAjax()) )
 		{
 			GWF_Website::addJavascriptInline($this->getTGCConfigJS());
 			
@@ -76,6 +82,10 @@ final class Module_Tamagochi extends GWF_Module
 	
 	private function includeAppAssets()
 	{
+		# Libs
+		$v = $this->getVersionDB(); $min = GWF_DEBUG_JS ? '' : '.min';
+		GWF_Website::addJavascript(GWF_WEB_ROOT."module/Tamagochi/bower_components/howler.js/dist/howler$min.js?v=$v");
+		
 		# CSS
 		$this->addCSS('tamagochi.css');
 		# Model
