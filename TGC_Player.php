@@ -7,9 +7,13 @@ class TGC_Player extends GDO
 
 	public static $STATS = array('max_hp', 'max_mp', 'gold');
 	public static $SKILLS = array('fighter', 'ninja', 'priest', 'wizard');
+	public static $XP = array('fighter_xp', 'ninja_xp', 'priest_xp', 'wizard_xp');
 	public static $ATTRIBUTES = array('strength', 'dexterity', 'wisdom', 'intelligence');
-	public static function allFields() { return array_merge(self::$SKILLS, self::$STATS, self::$ATTRIBUTES); }
-
+	public static function allFields() { return array_merge(self::$XP, self::$SKILLS, self::$STATS, self::$ATTRIBUTES); }
+	
+	public static $FEELS = array('health', 'endurance', 'sober', 'awake', 'brave', 'satiness', 'drought');
+	private $water = 100, $tired = 0, $food = 100, $alc = 0, $frightened = 0, $endurance = 0;
+	
 	private $user = null;
 	private $lat = null, $lng = null, $moved = false;
 	private $base = array();
@@ -105,45 +109,53 @@ class TGC_Player extends GDO
 	public function hasPosition() { return !!$this->lat; }
 	
 	public function isDead() { return $this->hp <= 0; }
-	public function giveHP($hp) { $this->hp = Common::clamp($this->hp + $hp, 0, $this->power('maxHP'); }
-	public function giveMP($mp) { $this->mp = Common::clamp($this->mp + $mp, 0, $this->maxMP); }
+	public function giveHP($hp) { $this->base['hp'] = Common::clamp($this->hp() + $hp, 0, $this->maxHP()); $this->feel('health'); }
+	public function giveMP($mp) { $this->base['mp'] = Common::clamp($this->mp() + $mp, 0, $this->maxMP()); }
 	
-	public function hp() { return $this->hp; }
-	public function maxHP() { return $this->hp; }
-	public function mp() { return $this->mp; }
+	public function hp() { return $this->base['hp']; }
+	public function maxHP() { return $this->power('max_hp'); }
+	public function mp() { return $this->base['mp']; }
+	public function maxMP() { return $this->power('max_mp'); }
 	
 	public function sumSkills() { return $this->fighter() + $this->ninja() + $this->priest() + $this->wizard(); }
 	public function sumAttributes() { return $this->strength() + $this->dexterity() + $this->wisdom() + $this->intelligence(); }
 
-	public function fighterXP() { return $this->xp('fighter'); }
-	public function ninjaXP() { return $this->xp('ninja'); }
-	public function priestXP() { return $this->xp('priest'); }
-	public function wizardXP() { return $this->xp('wizard'); }
-	public function xp($skill) { return (int) $this->getVar('p_'.$skill.'_xp'); }
+// 	public function fighterXP() { return $this->xp('fighter'); }
+// 	public function ninjaXP() { return $this->xp('ninja'); }
+// 	public function priestXP() { return $this->xp('priest'); }
+// 	public function wizardXP() { return $this->xp('wizard'); }
+// 	public function xp($skill) { return $this->getVar('p_'.$skill.'_xp'); }
 	
 	public function fighterLevel() { return $this->skillLevel('fighter'); }
 	public function ninjaLevel() { return $this->skillLevel('ninja'); }
 	public function priestLevel() { return $this->skillLevel('priest'); }
 	public function wizardLevel() { return $this->skillLevel('wizard'); }
-	public function skillLevel($skill) { return (int) $this->getVar('p_'.$skill.'_level'); }
+	public function skillLevel($skill) { return $this->getVar('p_'.$skill); }
+	
+	public function feel($feel)
+	{
+		$value = call_user_func(array($this, $feel));
+		$this->base[$feel] = $this->adjusted[$feel] = $value;
+		return $value;
+	}
 	
 	##############
 	### Fields ###
 	##############
-	public function health() { return Common::clamp($this->hp() /  $this->maxHP(), 0.0, 1.0); }
+	public function strength() { return $this->power('strength'); }
+	public function dexterity() { return $this->power('dexterity'); }
+	public function wisdom() { return $this->power('wisdom'); }
+	public function intelligence() { return $this->power('intelligence'); }
+	
+	public function fighter() { return $this->power('fighter'); }
+	public function ninja() { return $this->power('ninja'); }
+	public function priest() { return $this->power('priest'); }
+	public function wizard() { return $this->power('wizard'); }
+	
+	public function health() { return Common::clamp($this->hp() /  min(30, $this->maxHP()), 0.0, 1.0); }
 	public function endurance() { return Common::clamp($this->endurance / 40.0, 0.0, 1.0); }
-	
-	public function strength() { return $this->strength; }
-	public function dexterity() { return $this->dexterity; }
-	public function wisdom() { return $this->wisdom; }
-	public function intelligence() { return $this->intelligence; }
-	
-	public function fighter() { return $this->fighter; }
-	public function ninja() { return $this->ninja; }
-	public function priest() { return $this->priest; }
-	public function wizard() { return $this->wizard; }
-	
 	public function sober() { return 1.0; }
+	public function brave() { return 1.0; }
 	public function awake() { return Common::clamp($this->tired - 50 / 100.0, 0.0, 1.0); }
 	public function drought() { return Common::clamp($this->water / 100.0, 0.0, 1.0); }
 	public function satiness() { return Common::clamp($this->food - 50 / 200.0, 0.0, 1.0); }
@@ -154,18 +166,16 @@ class TGC_Player extends GDO
 	public function debugInfo()
 	{
 		$fields1 = array(
-			'fighterXP',    'ninjaXP',    'priestXP',    'wizardXP',
-			'fighterLevel', 'ninjaLevel', 'priestLevel', 'wizardLevel',
-			'fighter',      'ninja',      'priest',      'wizard',
+			'fighter_xp',    'ninja_xp',    'priest_xp',    'wizard_xp',
+			'fighter',       'ninja',       'priest',       'wizard',
 		);
 		$fields2 = array(
-			'hp',           'maxHP',
-			'mp',           'maxMP',
+			'hp',           'max_hp',
+			'mp',           'max_mp',
 			'strength',     'dexterity',  'wisdom',      'intelligence',
 		);
-		$fields3 = array(
-		);
-		return $this->debufInfoFields($fields1).$this->debufInfoFields($fields2).$this->debugInfoFields($fields3);
+		$fields3 = self::$FEELS;
+		return $this->debugInfoFields($fields1).$this->debugInfoFields($fields2).$this->debugInfoFields($fields3);
 	}
 	
 	public function debugInfoFields(array $fields)
@@ -175,7 +185,7 @@ class TGC_Player extends GDO
 		{
 			$powers[] = sprintf('%s: %s(%s)', $field, $this->base($field), $this->power($field));
 		}
-		return sprintf('%s: %s', $this->displayName(), implode('; ', $powers1))."\n";
+		return sprintf('%s: %s', $this->displayName(), implode(' - ', $powers))."\n";
 	}
 	
 	#############
@@ -187,7 +197,7 @@ class TGC_Player extends GDO
 
 	public function compareTo(TGC_Player $player, $field) { return $this->compare($this->power($field), $player->power($field)); }
 	public function compareAvg($field) { return $this->compare($this->power($field), $this->average($field)); }
-	public function compare($p1, $p2) { return round(((float)($p1 - $p2)) / ((float)($p1 + $p2)), 2); }
+	public function compare($p1, $p2) { return Common::clamp( ($p1 - $p2) / ($p1 + $p2), 0.01, 1.00); }
 	
 	###########
 	### DTO ###
@@ -216,10 +226,10 @@ class TGC_Player extends GDO
 			'e' => $this->getVar('p_active_element'),
 			's' => $this->getVar('p_active_skill'),
 			'm' => $this->getVar('p_active_mode'),
-			'fl' => (int)$this->getVar('p_fighter_level'),
-			'nl' => (int)$this->getVar('p_ninja_level'),
-			'pl' => (int)$this->getVar('p_priest_level'),
-			'wl' => (int)$this->getVar('p_wizard_level'),
+			'fl' => (int)$this->getVar('p_fighter'),
+			'nl' => (int)$this->getVar('p_ninja'),
+			'pl' => (int)$this->getVar('p_priest'),
+			'wl' => (int)$this->getVar('p_wizard'),
 		);
 	}
 	
@@ -227,25 +237,25 @@ class TGC_Player extends GDO
 	{
 		return array(
 // 			'p_uid' => $this->getVar('p_uid'),
-			'hp' => $this->hp,
-			'mp' => $this->mp,
-			'mhp' => $this->maxHP,
-			'mmp' => $this->maxMP,
+			'hp' => $this->hp(),
+			'mp' => $this->mp(),
+			'mhp' => $this->maxHP(),
+			'mmp' => $this->maxMP(),
 			'as' => (int)$this->getVar('p_strength'),
 			'ad' => (int)$this->getVar('p_dexterity'),
 			'aw' => (int)$this->getVar('p_wisdom'),
 			'ai' => (int)$this->getVar('p_intelligence'),
-			'es' => $this->strength,
-			'ed' => $this->dexterity,
-			'ew' => $this->wisdom,
-			'ei' => $this->intelligence,
+			'es' => $this->power('strength'),
+			'ed' => $this->power('dexterity'),
+			'ew' => $this->power('wisdom'),
+			'ei' => $this->power('intelligence'),
 			'cc' => $this->getVar('p_last_color_change'),
 			'ec' => $this->getVar('p_last_element_change'),
 			'sc' => $this->getVar('p_last_skill_change'),
 			'mc' => $this->getVar('p_last_mode_change'),
 			'fx' => (int)$this->getVar('p_fighter_xp'),
 			'nx' => (int)$this->getVar('p_ninja_xp'),
-			'px' => (int)$this->getVar('p_priest_level'),
+			'px' => (int)$this->getVar('p_priest_xp'),
 			'wx' => (int)$this->getVar('p_wizard_xp'),
 		);
 	}
@@ -273,8 +283,21 @@ class TGC_Player extends GDO
 		$player = new $classname(array(
 			'p_uid' => $user->getID(),
 			'p_type' => $type,
-			'p_base_hp' => '20',
-			'p_base_mp' => '0',
+			'p_gold' => '50',
+			'p_max_hp' => '20',
+			'p_max_mp' => '0',
+			'p_strength' => '0',
+			'p_dexterity' => '0',
+			'p_wisdom' => '0',
+			'p_intelligence' => '0',
+			'p_fighter' => '0',
+			'p_ninja' => '0',
+			'p_priest' => '0',
+			'p_wizard' => '0',
+			'p_fighter_xp' => '0',
+			'p_ninja_xp' => '0',
+			'p_priest_xp' => '0',
+			'p_wizard_xp' => '0',
 			'p_active_color' => TGC_Const::NONE,
 			'p_active_element' => TGC_Const::NONE,
 			'p_active_skill' => TGC_Const::NONE,
@@ -283,18 +306,7 @@ class TGC_Player extends GDO
 			'p_last_element_change' => null,
 			'p_last_skill_change' => null,
 			'p_last_mode_change' => null,
-			'p_strength' => '1',
-			'p_dexterity' => '1',
-			'p_wisdom' => '1',
-			'p_intelligence' => '1',
-			'p_fighter_xp' => '0',
-			'p_ninja_xp' => '0',
-			'p_priest_xp' => '0',
-			'p_wizard_xp' => '0',
-			'p_fighter_level' => '0',
-			'p_ninja_level' => '0',
-			'p_priest_level' => '0',
-			'p_wizard_level' => '0',
+			'p_last_activity' => null,
 		));
 		if (!$player->insert())
 		{
@@ -379,20 +391,38 @@ class TGC_Player extends GDO
 	##############
 	public function afterLoad()
 	{
+		$this->base = array();
+		$this->base['hp'] = 0;
+		$this->base['mp'] = 0;
+		foreach ($this->allFields() as $field)
+		{
+			$this->base[$field] = (int)$this->getVar('p_'.$field);
+		}
+		$this->adjusted = array();
 		$this->rehash();
-		$this->hp = $this->maxHP;
-		$this->mp = $this->maxMP;
+		$this->base['hp'] = $this->maxHP();
+		$this->base['mp'] = $this->maxMP();
 		$this->endurance = $this->dexterity();
-		$this->tired = 0;
-		$this->food = 1000;
-		$this->water = 100;
+		$this->rehashFeels();
+		$this->giveHP(0);
+		$this->giveMP(0);
 	}
 	
 	public function rehash()
 	{
+		$this->rehashBase();
 		$this->rehashSkills();
 		$this->rehashAtrributes();
 		$this->rehashStats();
+		$this->rehashFeels();
+	}
+	
+	private function rehashBase()
+	{
+		foreach ($this->base as $key => $value)
+		{
+			$this->adjusted[$key] = $this->base($key);
+		}
 	}
 	
 	private function rehashSkills()
@@ -401,34 +431,40 @@ class TGC_Player extends GDO
 		$this->rehashSkill('ninja');
 		$this->rehashSkill('priest');
 		$this->rehashSkill('wizard');
-		$this->fighter = $this->fighterLevel();
-		$this->ninja = $this->ninjaLevel();
-		$this->priest = $this->priestLevel();
-		$this->wizard = $this->wizardLevel();
 	}
 	
 	private function rehashAtrributes()
 	{
-		$this->strength = $this->getVar('p_strength') + $this->fighterLevel();
-		$this->dexterity = $this->getVar('p_dexterity') + $this->ninjaLevel();
-		$this->wisdom = $this->getVar('p_wisdom') + $this->priestLevel();
-		$this->intelligence = $this->getVar('p_intelligence') + $this->wizardLevel();
+		$this->adjusted['strength'] += $this->fighter();
+		$this->adjusted['dexterity'] += $this->ninja();
+		$this->adjusted['wisdom'] += $this->priest();
+		$this->adjusted['intelligence'] += $this->wizard();
 	}
 	
 	private function rehashStats()
 	{
-		$this->maxHP = $this->getVar('p_base_hp') + $this->strength() * 3 + $this->dexterity() * 1;
-		$this->maxMP = $this->getVar('p_base_mp') + $this->wisdom() * 1 + $this->intelligence() * 2;
+		$this->adjusted['max_hp'] += $this->strength() * 3 + $this->dexterity() * 1;
+		$this->adjusted['max_mp'] += $this->wisdom() * 1 + $this->intelligence() * 2;
+	}
+	
+	private function rehashFeels()
+	{
+		foreach (self::$FEELS as $feel)
+		{
+			$this->feel($feel);
+		}
 	}
 	
 	private function rehashSkill($skill)
 	{
-		$xp = $this->getVar(sprintf('p_%s_xp', $skill));
-		$oldLevel = $this->base($skill) - 1;
+		$xp = $this->getVar('p_'.$skill.'_xp');
+		$oldLevel = $this->base[$skill];
 		$newLevel = TGC_Logic::levelForXP($xp);
 		if ($oldLevel != $newLevel)
 		{
-			return $this->saveVar($levelvar, $newLevel.'');
+			return $this->saveVar('p_'.$skill, $newLevel.'');
+			$this->base[$skill] = $newLevel;
+			$this->adjusted[$skill] = $newLevel;
 		}
 		return false;
 	}
@@ -499,7 +535,7 @@ class TGC_Player extends GDO
 		# Tell player
 		$payload = array_merge($this->ownPlayerDTO(), array(
 			'skill' => $skill,
-			'level' => $this->base($skill),
+			'level' => $this->base[$skill],
 		));
 		$payload = TGC_Commands::payload(json_encode($payload), $mid);
 		$this->sendCommand('TGC_LVLUP', $payload);

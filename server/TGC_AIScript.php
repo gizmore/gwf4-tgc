@@ -97,8 +97,6 @@ abstract class TGC_AIScript
 	
 	protected function killChance(TGC_Player $player, $skill)
 	{
-		printf("%s: %s", $this->bot->displayName(), $this->bot->debugInfo());
-		printf("%s: %s", $player->displayName(), $player->debugInfo());
 		$cmp_health = $this->bot->compareTo($player, 'health');
 		$cmp_power = $this->bot->compareTo($player, $skill);
 		return $cmp_power / $cmp_health;

@@ -42,6 +42,7 @@ final class TGC_Bot extends TGC_Player
 	
 	private function tickExecute($command, $payload)
 	{
+		printf('%s >> %s:%s', $this->displayName(), $command, $payload);
 		$method = array($this->handler(), 'cmd_'.$command);
 		call_user_func($method, $this->getUser(), $payload, GWS_Commands::DEFAULT_MID);
 	}
