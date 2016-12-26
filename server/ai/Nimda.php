@@ -1,5 +1,5 @@
 <?php
-class TGCAI_Nimda 
+class TGCAI_Nimda extends TGC_AIScript
 {
 	/**
 	 * Find the best player and try to kill him :)
@@ -19,9 +19,40 @@ class TGCAI_Nimda
 		}
 	}
 	
+	public function findTarget()
+	{
+		if (!($target = $this->bestHuman('score_humanLeader')))
+		{
+			$target = $this->bestPlayer('score_humanLeader');
+		}
+		return $target;
+	}
+	
 	public function tick($tick)
 	{
-		$this->bot->moveNear($this->bestHuman('score_humanLeader'));
-		$this->bot->moveNear($this->bestPlayer('score_humanLeader'));
+		if ($target = $this->currentEnemyTarget())
+		{
+			$this->moveNear($target, true);
+			$this->bruteForce($target);
+		}
+		else
+		{
+			$this->heal($this->bot);
+		}
+	}
+	
+	protected function bruteForce($target)
+	{
+		if ($target)
+		{
+			$skill = $this->bestKillChanceSkill($target);
+			switch ($skill)
+			{
+				case 'fighter': $this->fight($target); break;
+				case 'ninja': $this->attack($target); break;
+				case 'priest':
+				case 'wizard':
+			}
+		}
 	}
 }

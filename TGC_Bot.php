@@ -2,45 +2,61 @@
 final class TGC_Bot extends TGC_Player
 {
 	private $script;
+	private $command = null;
 	
-	public static $JOINS = array('user', 'player');
 	public function getClassName() { return __CLASS__; }
-	public function getTableName() { return GWF_TABLE_PREFIX.'tgc_bot'; }
-	public function getColumnDefines()
-	{
-		return array(
-			'b_uid' => array(GDO::PRIMARY_KEY|GDO::UINT),
-			'b_type' => array(GDO::VARCHAR|GDO::ASCII|GDO::CASE_S, GDO::NOT_NULL, 16),
-
-			'user' => array(GDO::JOIN, GDO::NOT_NULL, array('GWF_User', 'b_uid', 'user_id')),
-			'player' => array(GDO::JOIN, GDO::NOT_NULL, array('TGC_Player', 'b_uid', 'p_uid')),
-		);
-	}
 	
 	###############
 	### Getters ###
 	###############
-	public function getID() { return $this->getVar('b_id'); }
-	public function getType() { return $this->getVar('b_type'); }
+	public function getID() { return $this->getVar('p_uid'); }
+	public function getType() { return $this->getVar('p_type'); }
+	public function target() { return $this->script->target(); }
 	public function handler() { return TGC_AI::instance()->handler(); }
+	public function lastCommand() { return $this->command; }
 	
 	############
 	### Stub ###
 	############
-	public function send($messageText) {}
+	public function send($messageText) { printf("%s << %s\n", $this->displayName(), $messageText); }
 	
 	##############
 	### Events ###
 	##############
 	public function afterLoad()
 	{
+		parent::afterLoad();
 		$this->script = TGC_AIScript::factory($this);
-		return parent::afterLoad();
 	}
 	
 	public function tick($tick)
 	{
-		return $this->script->tick($tick);
+		$this->command = null;
+		$this->script->tick($tick);
+		if ($this->command)
+		{
+			list($command, $payload) = $this->command;
+			$this->tickExecute($command, $payload);
+		}
+	}
+	
+	private function tickExecute($command, $payload)
+	{
+		$method = array($this->handler(), 'cmd_'.$command);
+		call_user_func($method, $this->getUser(), $payload, GWS_Commands::DEFAULT_MID);
+	}
+	
+	###################
+	### Move Helper ###
+	###################
+	public function aiMoveNear($player, $instant=false)
+	{
+		if ($player && $player->hasPosition())
+		{
+			$lat = GWF_Random::Rand(0, 1000) / 1000 + $player->lat();
+			$lng = GWF_Random::Rand(0, 1000) / 1000 + $player->lng();
+			$this->aiMove($lat, $lng, $instant);
+		}
 	}
 	
 	###############
@@ -53,31 +69,51 @@ final class TGC_Bot extends TGC_Player
 	
 	public function aiCommand($command, $payload)
 	{
-		return call_user_func(array($this->handler(), 'cmd_'.$command), $this->getUser(), $payload);
+		if (!$this->command)
+		{
+			$this->command = array($command, $payload);
+		}
 	}
 	
 	#################
 	### Commands ####
 	#################
-	public function aiMove($lat, $lng)
+	public function aiMove($lat, $lng, $instant=false)
 	{
 		$this->setPosition($lat, $lng);
-		$this->aiJSONCommand('tgcPos', array('lat' => $lat, 'lng' => $lng));
+		$payload = array('lat' => $lat, 'lng' => $lng);
+		if ($instant)
+		{
+			$this->tickExecute('tgcPos', $payload);
+		}
+		else
+		{
+			$this->aiJSONCommand('tgcPos', $payload);
+		}
 	}
 	
-	public function aiFight(TGC_Player $player)
+	public function aiFight($player, $command='tgcFight')
 	{
-		$this->aiCommand('tgcFight', $player->getName());
+		if ($player)
+		{
+			$this->aiCommand($command, $player->getName());
+		}
 	}
 	
-	###################
-	### Move Helper ###
-	###################
-	public function moveNear(TGC_Player $player)
+	public function aiAttack($player)
 	{
-		$lat = GWF_Random::Rand(0, 1000) / 1000 + $player->lat();
-		$lng = GWF_Random::Rand(0, 1000) / 1000 + $player->lng();
-		$this->aiMove($lat, $lng);
+		$this->aiFight($player, 'tgcAttack');
 	}
+	
+	public function aiCast($player, $spell)
+	{
+	
+	}
+	
+	public function aiBrew($player, $spell)
+	{
+	
+	}
+	
 
 }

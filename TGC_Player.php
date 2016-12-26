@@ -1,19 +1,20 @@
 <?php
 class TGC_Player extends GDO
 {
-	public static $JOINS = array('user');
 	public static $USER_FIELDS = array('user_name', 'user_guest_name', 'user_gender', 'user_regdate', 'user_level', 'user_credits');
 	public static function userFields() { return '*, '.implode(',', self::$USER_FIELDS); }
-	
+	public static $JOINS = array('user');
+
+	public static $STATS = array('max_hp', 'max_mp', 'gold');
+	public static $SKILLS = array('fighter', 'ninja', 'priest', 'wizard');
+	public static $ATTRIBUTES = array('strength', 'dexterity', 'wisdom', 'intelligence');
+	public static function allFields() { return array_merge(self::$SKILLS, self::$STATS, self::$ATTRIBUTES); }
+
 	private $user = null;
 	private $lat = null, $lng = null, $moved = false;
-	
-	private $hp, $mp, $maxHP, $maxMP;
-	private $strength, $dexterity, $wisdom, $intelligence;
-	private $fighter,  $ninja,     $priest, $wizard;
-	
-	private $lastAttack;
-	private $attacked = false, $defended = false;
+	private $base = array();
+	private $effects = array();
+	private $adjusted = array();
 	
 	public function getClassName() { return __CLASS__; }
 	public function getTableName() { return GWF_TABLE_PREFIX.'tgc_players'; }
@@ -21,37 +22,44 @@ class TGC_Player extends GDO
 	{
 		return array(
 			'p_uid' => array(GDO::PRIMARY_KEY|GDO::UINT),
+			'p_type' => array(GDO::VARCHAR|GDO::ASCII|GDO::CASE_S, GDO::NULL, 16),
+// 			'p_race' => array(GDO::ENUM, TGC_Const::NONE, TGC_Const::$RACES),
+
+			# Base
+			'p_gold' => array(GDO::UINT, 50),
+
+			'p_max_hp' => array(GDO::UINT, 10),
+			'p_max_mp' => array(GDO::UINT, 0),
 				
-			'p_last_slap' => array(GDO::DATE, GDO::NULL, 14),
+			'p_strength' => array(GDO::UINT, 0),
+			'p_dexterity' => array(GDO::UINT, 0),
+			'p_wisdom' => array(GDO::UINT, 0),
+			'p_intelligence' => array(GDO::UINT, 0),
+			
+			'p_fighter' => array(GDO::TINY|GDO::UINT, 0),
+			'p_ninja' => array(GDO::TINY|GDO::UINT, 0),
+			'p_priest' => array(GDO::TINY|GDO::UINT, 0),
+			'p_wizard' => array(GDO::TINY|GDO::UINT, 0),
+				
+			# Combat				
+			'p_fighter_xp' => array(GDO::UINT, 0),
+			'p_ninja_xp' => array(GDO::UINT, 0),
+			'p_priest_xp' => array(GDO::UINT, 0),
+			'p_wizard_xp' => array(GDO::UINT, 0),
 				
 			'p_active_color' => array(GDO::ENUM, TGC_Const::NONE, TGC_Const::$COLORS),
 			'p_active_element' => array(GDO::ENUM, TGC_Const::NONE, TGC_Const::$ELEMENTS),
 			'p_active_skill' => array(GDO::ENUM, TGC_Const::NONE, TGC_Const::$SKILLS),
 			'p_active_mode' => array(GDO::ENUM, TGC_Const::NONE, TGC_Const::$MODES),
+			
+			# Timestamps
+			'p_last_color_change' => array(GDO::UINT, GDO::NULL),
+			'p_last_element_change' => array(GDO::UINT, GDO::NULL),
+			'p_last_skill_change' => array(GDO::UINT, GDO::NULL),
+			'p_last_mode_change' => array(GDO::UINT, GDO::NULL),
+			'p_last_activity' => array(GDO::UINT, GDO::NULL),
 
-			'p_last_color_change' => array(GDO::DATE, GDO::NULL, 14),
-			'p_last_element_change' => array(GDO::DATE, GDO::NULL, 14),
-			'p_last_skill_change' => array(GDO::DATE, GDO::NULL, 14),
-			'p_last_mode_change' => array(GDO::DATE, GDO::NULL, 14),
-
-			'p_base_hp' => array(GDO::UINT, 20),
-			'p_base_mp' => array(GDO::UINT, 0),
-				
-			'p_strength' => array(GDO::UINT, 1),
-			'p_dexterity' => array(GDO::UINT, 1),
-			'p_wisdom' => array(GDO::UINT, 1),
-			'p_intelligence' => array(GDO::UINT, 1),
-				
-			'p_fighter_xp' => array(GDO::UINT, 0),
-			'p_ninja_xp' => array(GDO::UINT, 0),
-			'p_priest_xp' => array(GDO::UINT, 0),
-			'p_wizard_xp' => array(GDO::UINT, 0),
-
-			'p_fighter_level' => array(GDO::UINT, 0),
-			'p_ninja_level' => array(GDO::UINT, 0),
-			'p_priest_level' => array(GDO::UINT, 0),
-			'p_wizard_level' => array(GDO::UINT, 0),
-				
+			# Joins
 			'user' => array(GDO::JOIN, GDO::NOT_NULL, array('GWF_User', 'p_uid', 'user_id')),
 		);
 	}
@@ -59,41 +67,50 @@ class TGC_Player extends GDO
 	##############
 	### Static ###
 	##############
-	public static function getByID($userid)
-	{
-		$fields = self::$USER_FIELDS;
-		$where = 'p_id'.intval($userid);
-		$player = self::table(__CLASS__)->selectFirstObject($fields, $where, self::$JOINS);
-		$player->afterLoad();
-		return $player;
-	}
+// 	public static function getByID($userid)
+// 	{
+// 		$fields = self::$USER_FIELDS;
+// 		$where = 'p_uid'.intval($userid);
+// 		$player = self::table(__CLASS__)->selectFirstObject($fields, $where, self::$JOINS);
+// 		$player->afterLoad();
+// 		return $player;
+// 	}
 	
 	############
 	### User ###
 	############
-	public function getUser() { return $this->user; }
+	public function getUserID() { return $this->getVar('p_uid'); }
 	public function setUser(GWF_User $user) { $this->user = $user; }
+	public function getUser() { return $this->user; }
+	public function isBot() { return $this->user->isBot(); }
+	public function isHuman() { return !$this->user->isBot(); }
+	public function displayName() { return $this->getUser()->displayName(); }
+
+	###############
+	### Friends ###
+	###############
+	public function isEnemy(TGC_Player $player) { return !$this->isFriendly($player); }
+	public function isFriendly(TGC_Player $player) { return $player === $this || $this->isFriend($player); }
+	public function isFriend(TGC_Player $player) { return GWF_Friendship::areFriendsByID($this->getUserID(), $player->getUserID()); }
 	
 	###############
 	### Getters ###
 	###############
 	public function getName() { return $this->getVar('user_name'); }
+	public function getRace() { return $this->getVar('p_race'); }
 	public function getGender() { return $this->getVar('user_gender'); }
-	public function isBot() { return $this->getUser()->isBot(); }
-
+	
 	public function lat() { return $this->lat; }
 	public function lng() { return $this->lng; }
-	public function hasPosition() { return $this->lat !== null; }
+	public function hasPosition() { return !!$this->lat; }
 	
 	public function isDead() { return $this->hp <= 0; }
-	public function giveHP($hp) { $this->hp = Common::clamp($this->hp + $hp, 0, $this->maxHP); }
+	public function giveHP($hp) { $this->hp = Common::clamp($this->hp + $hp, 0, $this->power('maxHP'); }
 	public function giveMP($mp) { $this->mp = Common::clamp($this->mp + $mp, 0, $this->maxMP); }
 	
 	public function hp() { return $this->hp; }
-	public function maxHP() { return $this->maxHP; }
-
+	public function maxHP() { return $this->hp; }
 	public function mp() { return $this->mp; }
-	public function maxMP() { return $this->maxMP; }
 	
 	public function sumSkills() { return $this->fighter() + $this->ninja() + $this->priest() + $this->wizard(); }
 	public function sumAttributes() { return $this->strength() + $this->dexterity() + $this->wisdom() + $this->intelligence(); }
@@ -104,15 +121,18 @@ class TGC_Player extends GDO
 	public function wizardXP() { return $this->xp('wizard'); }
 	public function xp($skill) { return (int) $this->getVar('p_'.$skill.'_xp'); }
 	
-	public function fighterLevel() { return $this->level('fighter'); }
-	public function ninjaLevel() { return $this->level('ninja'); }
-	public function priestLevel() { return $this->level('priest'); }
-	public function wizardLevel() { return $this->level('wizard'); }
+	public function fighterLevel() { return $this->skillLevel('fighter'); }
+	public function ninjaLevel() { return $this->skillLevel('ninja'); }
+	public function priestLevel() { return $this->skillLevel('priest'); }
+	public function wizardLevel() { return $this->skillLevel('wizard'); }
 	public function skillLevel($skill) { return (int) $this->getVar('p_'.$skill.'_level'); }
 	
 	##############
 	### Fields ###
 	##############
+	public function health() { return Common::clamp($this->hp() /  $this->maxHP(), 0.0, 1.0); }
+	public function endurance() { return Common::clamp($this->endurance / 40.0, 0.0, 1.0); }
+	
 	public function strength() { return $this->strength; }
 	public function dexterity() { return $this->dexterity; }
 	public function wisdom() { return $this->wisdom; }
@@ -124,18 +144,50 @@ class TGC_Player extends GDO
 	public function wizard() { return $this->wizard; }
 	
 	public function sober() { return 1.0; }
-	public function awake() { return 1.0; }
-	public function drought() { return 1.0; }
-	public function satiness() { return 1.0; }
+	public function awake() { return Common::clamp($this->tired - 50 / 100.0, 0.0, 1.0); }
+	public function drought() { return Common::clamp($this->water / 100.0, 0.0, 1.0); }
+	public function satiness() { return Common::clamp($this->food - 50 / 200.0, 0.0, 1.0); }
+	
+	#############
+	### Debug ###
+	#############
+	public function debugInfo()
+	{
+		$fields1 = array(
+			'fighterXP',    'ninjaXP',    'priestXP',    'wizardXP',
+			'fighterLevel', 'ninjaLevel', 'priestLevel', 'wizardLevel',
+			'fighter',      'ninja',      'priest',      'wizard',
+		);
+		$fields2 = array(
+			'hp',           'maxHP',
+			'mp',           'maxMP',
+			'strength',     'dexterity',  'wisdom',      'intelligence',
+		);
+		$fields3 = array(
+		);
+		return $this->debufInfoFields($fields1).$this->debufInfoFields($fields2).$this->debugInfoFields($fields3);
+	}
+	
+	public function debugInfoFields(array $fields)
+	{
+		$powers = [];
+		foreach ($fields as $field)
+		{
+			$powers[] = sprintf('%s: %s(%s)', $field, $this->base($field), $this->power($field));
+		}
+		return sprintf('%s: %s', $this->displayName(), implode('; ', $powers1))."\n";
+	}
 	
 	#############
 	### Score ###
 	#############
-	public function power($field) { return call_user_func(array($this, $field)); }
+	public function base($field) { return isset($this->base[$field]) ? $this->base[$field] + 1 : 1; }
+	public function power($field) { return $this->adjusted[$field]; }
+	public function average($field) { return TGC_Global::average($field); }
+
 	public function compareTo(TGC_Player $player, $field) { return $this->compare($this->power($field), $player->power($field)); }
 	public function compareAvg($field) { return $this->compare($this->power($field), $this->average($field)); }
-	public function compare($p1, $p2) { return ($p1 - $p2) / ($p1 + $p2); }
-	public function average($field) { return TGC_Global::average($field); }
+	public function compare($p1, $p2) { return round(((float)($p1 - $p2)) / ((float)($p1 + $p2)), 2); }
 	
 	###########
 	### DTO ###
@@ -211,11 +263,16 @@ class TGC_Player extends GDO
 		return $player;
 	}
 	
-	
-	public static function createPlayer(GWF_User $user)
+	public static function createBot(GWF_User $user, $type)
 	{
-		$player = new self(array(
+		return self::createPlayer($user, 'TGC_Bot', $type);
+	}
+	
+	public static function createPlayer(GWF_User $user, $classname='TGC_Player', $type=null)
+	{
+		$player = new $classname(array(
 			'p_uid' => $user->getID(),
+			'p_type' => $type,
 			'p_base_hp' => '20',
 			'p_base_mp' => '0',
 			'p_active_color' => TGC_Const::NONE,
@@ -239,7 +296,10 @@ class TGC_Player extends GDO
 			'p_priest_level' => '0',
 			'p_wizard_level' => '0',
 		));
-		$player->insert();
+		if (!$player->insert())
+		{
+			return false;
+		}
 		foreach (self::$USER_FIELDS as $field)
 		{
 			$player->setVar($field, $user->getVar($field));
@@ -251,26 +311,10 @@ class TGC_Player extends GDO
 	##################
 	### Connection ###
 	##################
-	public function sendError($i18nKey)
-	{
-		GWF_Log::logCron(sprintf("%s: %s", $this->getName(), $i18nKey));
-		return $this->sendCommand('ERR', $i18nKey);
-	}
-	
-	public function sendJSONCommand($command, $object)
-	{
-		return $this->sendCommand($command, json_encode($object));
-	}
-	
-	public function sendCommand($command, $payload)
-	{
-		return $this->send("$command:$payload");
-	}
-	
-	public function send($messageText)
-	{
-		GWS_Global::send($this->user, $messageText);
-	}
+	public function sendError($i18nKey) { return $this->sendCommand('ERR', $i18nKey); }
+	public function sendJSONCommand($command, $object) { return $this->sendCommand($command, json_encode($object)); }
+	public function sendCommand($command, $payload) { return $this->send("$command:$payload"); }
+	public function send($messageText) { GWS_Global::send($this->user, $messageText); }
 
 	public function disconnect()
 	{
@@ -301,9 +345,9 @@ class TGC_Player extends GDO
 		}
 	}
 	
-	###########
-	### API ###
-	###########
+	############
+	### Move ###
+	############
 	public function moveTo($newLat, $newLng)
 	{
 		$newLat = (float)$newLat;
@@ -323,13 +367,12 @@ class TGC_Player extends GDO
 		$this->lng = $lng;
 	}
 	
-	public function getStatsHash()
-	{
-		$g = substr($this->getVar('user_gender'), 0, 1);
-		$sum = $this->getVar('p_fighter_level') + $this->getVar('p_ninja_level') + $this->getVar('p_priest_level') + $this->getVar('p_wizard_level');
-		return sprintf('%s%d', $g, $sum);
-	}
-	
+// 	public function getStatsHash()
+// 	{
+// 		$g = substr($this->getVar('user_gender'), 0, 1);
+// 		$sum = $this->getVar('p_fighter_level') + $this->getVar('p_ninja_level') + $this->getVar('p_priest_level') + $this->getVar('p_wizard_level');
+// 		return sprintf('%s%d', $g, $sum);
+// 	}
 	
 	##############
 	### Rehash ###
@@ -339,6 +382,10 @@ class TGC_Player extends GDO
 		$this->rehash();
 		$this->hp = $this->maxHP;
 		$this->mp = $this->maxMP;
+		$this->endurance = $this->dexterity();
+		$this->tired = 0;
+		$this->food = 1000;
+		$this->water = 100;
 	}
 	
 	public function rehash()
@@ -370,17 +417,16 @@ class TGC_Player extends GDO
 	
 	private function rehashStats()
 	{
-		$this->maxHP = $this->getVar('p_base_hp') + $this->strength * 3 + $this->dexterity * 1;
-		$this->maxMP = $this->getVar('p_base_mp') + $this->wisdom * 1 + $this->intelligence * 2;
+		$this->maxHP = $this->getVar('p_base_hp') + $this->strength() * 3 + $this->dexterity() * 1;
+		$this->maxMP = $this->getVar('p_base_mp') + $this->wisdom() * 1 + $this->intelligence() * 2;
 	}
 	
 	private function rehashSkill($skill)
 	{
 		$xp = $this->getVar(sprintf('p_%s_xp', $skill));
-		$levelvar = sprintf('p_%s_level', $skill);
-		$oldLevel = (int) $this->getVar($levelvar);
+		$oldLevel = $this->base($skill) - 1;
 		$newLevel = TGC_Logic::levelForXP($xp);
-		if ($oldLevel !== $newLevel)
+		if ($oldLevel != $newLevel)
 		{
 			return $this->saveVar($levelvar, $newLevel.'');
 		}
@@ -437,23 +483,26 @@ class TGC_Player extends GDO
 			$gain_int += TGC_Global::rand(1, 3);
 			break;
 		}
-
-		$this->increase('p_base_hp', $gain_hp); $this->increase('p_base_mp', $gain_mp);
-		$this->increase('p_strength', $gain_str); $this->increase('p_dexterity', $gain_dex);
-		$this->increase('p_wisdom', $gain_wis);   $this->increase('p_intelligence', $gain_int);
+		
+		$this->increaseVars(array(
+			'p_max_hp' => $gain_hp,
+			'p_max_mp' => $gain_mp,
+			'p_strength' => $gain_str,
+			'p_dexterity' => $gain_dex,
+			'p_wisdom' => $gain_wis,
+			'p_intelligence' => $gain_int,
+		));
 		
 		$this->rehash();
-		
 		$this->giveHP($gain_hp); $this->giveMP($gain_mp);
 		
 		# Tell player
-		$newLevel = $this->getVar('p_'.$skill.'_level');
 		$payload = array_merge($this->ownPlayerDTO(), array(
 			'skill' => $skill,
-			'level' => $newLevel,
+			'level' => $this->base($skill),
 		));
 		$payload = TGC_Commands::payload(json_encode($payload), $mid);
-		$this->sendCommand('LVLUP', $payload);
+		$this->sendCommand('TGC_LVLUP', $payload);
 	}
 	
 }

@@ -16,6 +16,7 @@ final class TGC_Const
 	const NINJA = 'ninja';
 	const PRIEST = 'priest';
 	const WIZARD = 'wizard';
+	public static $VALID_SKILLS = array(self::FIGHTER, self::NINJA, self::PRIEST, self::WIZARD);
 	public static $SKILLS = array(self::NONE, self::FIGHTER, self::NINJA, self::PRIEST, self::WIZARD);
 	
 	

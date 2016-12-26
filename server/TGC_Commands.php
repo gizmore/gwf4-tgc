@@ -19,6 +19,7 @@ final class TGC_Commands extends GWS_Commands
 		TGC_Global::init(31337);
 		$this->ai = new TGC_AI();
 		$this->ai->init($this);
+		$this->timer();
 	}
 	
 	#############

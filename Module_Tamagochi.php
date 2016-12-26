@@ -32,9 +32,9 @@ final class Module_Tamagochi extends GWF_Module
 	##############
 	public function cfgWelcomeMessage() { return $this->getModuleVar('tgc_welcome_msg', 'TGCv1'); }
 	public function cfgMaxBots() { return $this->getModuleVarInt('tgc_max_bots', '64'); }
-	public function cfgMaxLoserBots() { return $this->getModuleVarInt('tgc_max_loser_bots', '50'); }
-	public function cfgMaxWinnerBots() { return $this->getModuleVarInt('tgc_max_winner_bots', '25'); }
-	public function cfgMaxNimdaBots() { return $this->getModuleVarInt('tgc_max_nimda_bots', '2'); }
+	public function cfgMaxAssassinBots() { return $this->getModuleVarInt('tgc_max_assassin_bots', '15'); }
+	public function cfgMaxNimdaBots() { return $this->getModuleVarInt('tgc_max_nimda_bots', '3'); }
+	public function cfgMaxRobberBots() { return $this->getModuleVarInt('tgc_max_loser_bots', '40'); }
 	
 	###############
 	### Startup ###

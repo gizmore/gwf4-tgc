@@ -16,7 +16,7 @@ final class TGC_AI
 	public static function instance() { return self::$INSTANCE; }
 	public function handler() { return $this->handler; }
 	public function tgc() { return Module_Tamagochi::instance(); }
-	public function bots() { return $this->bots; }
+	public function bots() { return TGC_Global::$BOTS; }
 	public function scripts() { return $this->scripts; }
 	
 	############
@@ -39,7 +39,7 @@ final class TGC_AI
 	public function loadBots()
 	{
 		$table = GDO::table('TGC_Bot');
-		$result = $table->select('*, user.*, player.*', '', '', TGC_Bot::$JOINS);
+		$result = $table->select(TGC_Player::userFields(), 'p_type IS NOT NULL', '', TGC_Player::$JOINS);
 		while ($bot = $table->fetch($result, GDO::ARRAY_O))
 		{
 			$bot instanceof TGC_Bot;
@@ -79,7 +79,7 @@ final class TGC_AI
 	{
 		$chances = array();
 		$maxTotal = $this->tgc()->cfgMaxBots();
-		$haveTotal = count($this->bots);
+		$haveTotal = count($this->bots());
 		if ($haveTotal < $maxTotal)
 		{
 			foreach ($this->scripts as $type)
@@ -99,61 +99,44 @@ final class TGC_AI
 				$bot->afterLoad();
 				$this->addBot($bot);
 				$this->lastSpawn = $tick;
+				$this->debugSpawn($bot);
 			}
 		}
 	}
 
 	private function spawnBot($type)
 	{
-		$this->spawncounter++;
-		$user = new GWF_User(array(
-			'user_id' => '0',
+		# User
+		$user = GWF_Guest::blankUser(array(
 			'user_options' => GWF_User::BOT,
 			'user_name' => '#'.microtime(true),
-			'user_guest_id' => '1',
-			'user_guest_name' => '#B#',
-			'user_password' => '',
-			'user_regdate' => '',
-			'user_regip' => GWF_IP6::getIP(GWF_IP_EXACT, '::1'),
-			'user_email' => 'BOT'.$this->spawncounter.'@tgc.gizmore.org',
-			'user_gender' => GWF_User::NO_GENDER,
-			'user_lastlogin' => '0',
-			'user_lastactivity' => time(),
-			'user_birthdate' => '',
-			'user_countryid' => '0',
-			'user_langid' => '0',
-			'user_langid2' => '0',
-			'user_level' => '0',
-			'user_title' => '',
-			'user_settings' => '',
-			'user_data' => '',
-			'user_credits' => '0.00',
+			'user_regdate' => GWF_Time::getDate(),
 			'user_saved_at' => GWF_Time::getDate(),
 		));
 		if (!$user->insert())
 		{
 			return false;
 		}
-		$user->saveVars(array(
+		if (!$user->saveVars(array(
 			'user_name' => '#B#'.$user->getID(),
-			'user_guest_name' => '#'.$type.'#'.$this->spawncounter,
-		));
-		$player = TGC_Player::createPlayer($user);
-		$bot = new TGC_Bot(array('b_uid' => $user->getID(), 'b_type' => $type));
-		if (!$bot->insert())
+		)))
 		{
 			return false;
 		}
 		
-		foreach (TGC_Player::$USER_FIELDS as $field)
+		# Bpt 
+		if ($bot = TGC_Bot::createBot($user, $type))
 		{
-			$player->setVar($field, $user->getVar($field));
+			$bot->setUser($user);
 		}
-		
-		$bot->setGDOData(array_merge($bot->getGDOData(), $player->getGDOData()));
-		$bot->setUser($user);
 		
 		return $bot;
 	}
+	
+	private function debugSpawn(TGC_Bot $bot)
+	{
+		GWF_Log::logCron(sprintf('Spawned: %s', $bot->debugInfo()));
+	}
+	
 
 }

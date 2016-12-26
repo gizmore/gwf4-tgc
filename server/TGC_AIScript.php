@@ -42,9 +42,6 @@ abstract class TGC_AIScript
 	protected $target;
 	protected $difficulty;
 	
-	protected function hpRate() { return $this->bot->hp() / $this->bot->maxHP(); }
-	protected function mpRate() { return $this->bot->mp() / $this->bot->maxMP(); }
-	
 	protected function players() { return TGC_Global::$PLAYERS; }
 	protected function humans() { return TGC_Global::$PLAYERS; }
 	protected function bots() { return TGC_Global::$PLAYERS; }
@@ -61,22 +58,47 @@ abstract class TGC_AIScript
 	##############
 	### Target ###
 	##############
-	protected function findOldTarget() { return TGC_Global::getPlayer($this->target->getName()); }
+	protected function findOldTarget() { return $this->target ? TGC_Global::getPlayer($this->target->getName()) : false; }
 	protected function selectNewTarget() { $this->target = $this->findTarget(); return $this->target; }
 	protected function currentTarget() { return $this->findOldTarget() ? $this->target : $this->selectNewTarget(); }
+	protected function currentEnemyTarget()
+	{
+		$target = $this->currentTarget();
+		return $target && $this->bot->isEnemy($target) ? $target : false;
+	}
+	
+	protected function currentFriendlyTarget()
+	{
+		$target = $this->currentTarget();
+		return $target && $this->bot->isFriendly($target) ? $target : false;
+	}
+
+	################
+	### Commands ###
+	################
+	protected function moveNear($target, $instant) { $this->bot->aiMoveNear($target, $instant); }
+	protected function moveTo($lat, $lng, $instant) { $this->bot->aiMoveTo($target, $instant); }
+	protected function fight($target) { $this->bot->aiFight($target); }
+	protected function attack($target) { $this->bot->aiAttack($target); }
+	protected function brew($target, $spell) { $this->bot->aiBrew($target, $spell); }
+	protected function cast($target, $spell) { $this->bot->aiCast($target, $spell); }
 	
 	####################
 	### Kill Chances ###
 	####################
+	const BEST_SKILL = 0;
+	const BEST_POWER = 1;
 	protected function killChanceScore(TGC_Player $player)
 	{
 		$score = 1000 / $player->health();
-		$chance = array_pop($this->bestKillChance($player));
-		return $score * $chance;
+		$power = $this->bestKillChancePower($player);
+		return $score * $power;
 	}
 	
 	protected function killChance(TGC_Player $player, $skill)
 	{
+		printf("%s: %s", $this->bot->displayName(), $this->bot->debugInfo());
+		printf("%s: %s", $player->displayName(), $player->debugInfo());
 		$cmp_health = $this->bot->compareTo($player, 'health');
 		$cmp_power = $this->bot->compareTo($player, $skill);
 		return $cmp_power / $cmp_health;
@@ -84,14 +106,21 @@ abstract class TGC_AIScript
 	
 	protected function bestKillChanceSkill(TGC_Player $player)
 	{
-		return array_unshift($this->bestKillChance($player));
+		$bestChance = $this->bestKillChance($player);
+		return $bestChance[self::BEST_SKILL];
+	}
+	
+	protected function bestKillChancePower(TGC_Player $player)
+	{
+		$bestChance = $this->bestKillChance($player);
+		return $bestChance[self::BEST_POWER];
 	}
 	
 	protected function bestKillChance(TGC_Player $player)
 	{
 		$bestSkill = 'fighter';
 		$bestChance = $this->killChance($player, 'fighter');
-		foreach (TGC_Const::$SKILLS as $skill)
+		foreach (TGC_Const::$VALID_SKILLS as $skill)
 		{
 			$chance = $this->killChance($player, $skill);
 			if ($chance > $bestChance)
@@ -103,6 +132,22 @@ abstract class TGC_AIScript
 		return array($bestSkill, $bestChance);
 	}
 	
+	############
+	### Heal ###
+	############
+	public function heal($target)
+	{
+		if ($target)
+		{
+			
+		}
+	}
+	
+	public function healCommands()
+	{
+		
+	}
+	
 	###############
 	### Sorting ###
 	###############
@@ -111,25 +156,49 @@ abstract class TGC_AIScript
 		$possibleTargets = array();
 		foreach ($targets as $target)
 		{
-			$target instanceof TGC_Player;
-			if ($score = call_user_func(array($this, $scoreMethod), $target))
+			if ($target !== $this->bot)
 			{
-				$possibleTargets[$target->getName()] = $score;
+				if ($score = call_user_func(array($this, $scoreMethod), $target))
+				{
+					$possibleTargets[] = array($target, $score);
+				}
 			}
 		}
-		usort($possibleTargets);
-		$possibleTargets = slice(array_keys($possibleTargets), 0, $topShuffle);
+// 		$this->printTargets($possibleTargets);
+		usort($possibleTargets, function($a, $b) {
+			return $a[1] - $a[1];
+		});
+// 		$this->printTargets($possibleTargets);
+		$possibleTargets = array_slice($possibleTargets, 0, $topShuffle);
+// 		$this->printTargets($possibleTargets);
 		shuffle($possibleTargets);
-		return array_pop($possibleTargets);
+// 		$this->printTargets($possibleTargets);
+		$target = array_pop($possibleTargets);
+// 		echo "Final: ";
+// 		$this->printTarget($target);
+		return $target[0];
+	}
+	
+	private function printTargets(array $targets)
+	{
+		$i = 1;
+		echo "TARGETS:\n";
+		foreach ($targets as $target)
+		{
+			echo $i++;
+			$this->printTarget($target);
+		}
+	}
+	
+	private function printTarget(array $target)
+	{
+		printf("%s: %.01f\n", $target[0]->getName(), $target[1]);
 	}
 	
 	############
 	### Rand ###
 	############
-	public function botrand($zero=0.0, $one=1.0)
-	{
-		return $this->rand($zero, $one, $this->difficulty);
-	}
+	public function botrand($zero=0.0, $one=1.0) { return $this->rand($zero, $one, $this->difficulty); }
 	public function rand($zero=0.0, $one=1.0, $difficulty=0.0)
 	{
 		$min = (int)(Common::clamp($zero+$difficulty, 0.0, 1.0) * 1000.0);
