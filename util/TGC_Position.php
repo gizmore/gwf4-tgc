@@ -4,12 +4,12 @@ final class TGC_Position
 	/**
 	 * http://assemblysys.com/geographical-distance-calculation-in-php/
 	 * 
-	 * @param unknown $point1_lat
-	 * @param unknown $point1_long
-	 * @param unknown $point2_lat
-	 * @param unknown $point2_long
+	 * @param float $point1_lat
+	 * @param float $point1_long
+	 * @param float $point2_lat
+	 * @param float $point2_long
 	 * @param string $unit
-	 * @param number $decimals
+	 * @param int $decimals
 	 * @return float
 	 */
 	public static function distanceCalculation($point1_lat, $point1_long, $point2_lat, $point2_long, $unit = 'km', $decimals = 2) {
@@ -28,7 +28,7 @@ final class TGC_Position
 				$distance =  $degrees * 59.97662; // 1 degree = 59.97662 nautic miles, based on the average diameter of the Earth (6,876.3 nautical miles)
 		}
 		
-		printf("Distance: %.02f", $distance);
+// 		printf("Distance: %.02f\n", $distance);
 		
 		return round($distance, $decimals);
 	}

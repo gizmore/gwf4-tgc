@@ -18,6 +18,8 @@ final class TGC_AI
 	public function tgc() { return Module_Tamagochi::instance(); }
 	public function bots() { return TGC_Global::$BOTS; }
 	public function scripts() { return $this->scripts; }
+	public function maxBots() { return $this->tgc()->cfgMaxBots(); }
+	public function allowBots() { return $this->tgc()->cfgBots(); }
 	
 	############
 	### Load ###
@@ -33,7 +35,11 @@ final class TGC_AI
 		{
 			$this->typedBots[$type] = array();
 		}
-		$this->loadBots();
+		if ($this->allowBots())
+		{
+			$this->cleanup();
+			$this->loadBots();
+		}
 	}
 	
 	public function loadBots()
@@ -46,6 +52,19 @@ final class TGC_AI
 			$bot->setUser(new GWF_User($bot->getGDOData()));
 			$bot->afterLoad();
 			$this->addBot($bot);
+		}
+	}
+	
+	public function cleanup()
+	{
+		$table = GDO::table('TGC_Bot');
+		$where = 'p_type IS NOT NULL';
+		$max = $this->maxBots();
+		$have = $table->countRows($where);
+		if ($have > $max)
+		{
+			$orderby = 'p_uid ASC'; $joins = null; $limit = $have - $max;
+			$table->deleteWhere($where, $orderby, $joins, $limit);
 		}
 	}
 	
@@ -63,12 +82,15 @@ final class TGC_AI
 	############
 	public function tick($tick)
 	{
-		foreach (TGC_Global::$BOTS as $bot)
+		foreach (TGC_Global::$PLAYERS as $player)
 		{
-			$bot instanceof TGC_Bot;
-			$bot->tick($tick);
+			$player instanceof TGC_Player;
+			$player->tick($tick);
 		}
-		$this->spawnBots($tick);
+		if ($this->allowBots())
+		{
+			$this->spawnBots($tick);
+		}
 	}
 	
 	
@@ -129,7 +151,6 @@ final class TGC_AI
 		{
 			$bot->setUser($user);
 		}
-		
 		return $bot;
 	}
 	

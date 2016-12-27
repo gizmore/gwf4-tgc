@@ -118,7 +118,7 @@ abstract class TGC_AIScript
 	{
 		$bestSkill = 'fighter';
 		$bestChance = $this->killChance($player, 'fighter');
-		foreach (TGC_Const::$VALID_SKILLS as $skill)
+		foreach (TGC_Player::$SKILLS as $skill)
 		{
 			$chance = $this->killChance($player, $skill);
 			if ($chance > $bestChance)

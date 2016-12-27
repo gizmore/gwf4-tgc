@@ -25,12 +25,19 @@ final class TGC_Bot extends TGC_Player
 	##############
 	public function afterLoad()
 	{
-		parent::afterLoad();
 		$this->script = TGC_AIScript::factory($this);
+		$this->initBotPosition();
+		parent::afterLoad();
+	}
+	
+	private function initBotPosition()
+	{
+		$this->setPosition(52.0, 10.0);
 	}
 	
 	public function tick($tick)
 	{
+		parent::tick($tick);
 		$this->command = null;
 		$this->script->tick($tick);
 		if ($this->command)
@@ -42,7 +49,7 @@ final class TGC_Bot extends TGC_Player
 	
 	private function tickExecute($command, $payload)
 	{
-		printf('%s >> %s:%s', $this->displayName(), $command, $payload);
+		printf("%s >> %s:%s\n", $this->displayName(), $command, $payload);
 		$method = array($this->handler(), 'cmd_'.$command);
 		call_user_func($method, $this->getUser(), $payload, GWS_Commands::DEFAULT_MID);
 	}
@@ -85,7 +92,7 @@ final class TGC_Bot extends TGC_Player
 		$payload = array('lat' => $lat, 'lng' => $lng);
 		if ($instant)
 		{
-			$this->tickExecute('tgcPos', $payload);
+			$this->tickExecute('tgcPos', json_encode($payload));
 		}
 		else
 		{

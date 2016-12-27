@@ -4,34 +4,28 @@ final class TGC_Const
 	const NONE = 'none';
 	const GPS_INACCURACY = 100;
 	const RADAR_SQUARE = 5000;
-	
-	const SECRET_CUT = 33;
 
 	const ATTACK = 'attack';
 	const DEFEND = 'defend';
 	public static $MODES = array(self::NONE, self::ATTACK, self::DEFEND);
 	
-	
 	const FIGHTER = 'fighter';
 	const NINJA = 'ninja';
 	const PRIEST = 'priest';
 	const WIZARD = 'wizard';
-	public static $VALID_SKILLS = array(self::FIGHTER, self::NINJA, self::PRIEST, self::WIZARD);
 	public static $SKILLS = array(self::NONE, self::FIGHTER, self::NINJA, self::PRIEST, self::WIZARD);
 	
-	
-	const BLACK = 'black';
 	const RED = 'red';
-	const GREEN = 'green';
+	const BLACK = 'black';
 	const BLUE = 'blue';
-	public static $COLORS = array(self::NONE, self::BLACK, self::RED, self::GREEN, self::BLUE);
+	const GREEN = 'green';
+	public static $COLORS = array(self::NONE, self::RED, self::BLACK, self::BLUE, self::GREEN);
 	
 // 	const STEPPE = 'steppe';
 // 	const FOREST = 'forest';
 // 	const HILLS = 'hills';
 // 	const MOUNTAINS = 'mountains';
 // 	public static $TERRAINS = array(self::NONE, self::STEPPE, self::FOREST, self::HILLS, self::MOUNTAINS);
-	
 	
 	const FIRE = 'fire';
 	const WATER = 'water';
@@ -55,7 +49,6 @@ final class TGC_Const
 	const MON_MASTER = 'mon_master';
 	const JEZH_MASTER = 'jezh_master';
 	public static $LEVELS = array(self::NONE, self::NEOPHYTE, self::NOVICE, self::AMATEUR, self::APPRENTICE, self::ADEPT, self::EXPERT, self::MASTER, self::LO_MASTER, self::UM_MASTER, self::ON_MASTER, self::EE_MASTER, self::PA_MASTER, self::MON_MASTER, self::JEZH_MASTER);
-
 
 	public static $RUNES = array(
 		array('LO',  'UM',  'ON', 'EE', 'PAR', 'MON', 'JEZH'),

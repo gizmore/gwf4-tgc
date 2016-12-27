@@ -8,16 +8,12 @@ final class Tamagochi_Game extends GWF_Method
 	
 	public function execute()
 	{
-		return $this->templateHome();
+		return $this->templateGame();
 	}
 	
-	private function templateHome()
+	private function templateGame()
 	{
 		$tVars = array(
-// 			'user' => GWF_Session::getUser(),
-// 			'player' => TGC_Player::getCurrent(),
-// 			'levels' => GWF_Javascript::toJavascriptArray(TGC_Const::$LEVELS),
-// 			'runes' => json_encode(TGC_Const::$RUNES),
 		);
 		return $this->module->templatePHP('tamagochi-game.php', $tVars);
 	}

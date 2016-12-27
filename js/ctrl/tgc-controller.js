@@ -33,33 +33,37 @@ angular.module('gwf4')
 	////////////
 	$scope.navigateToMap = function() {
 		console.log('TGCCtrl.navigateToMap()');
-		PositionSrvc.withPosition().then($scope.withPosition, $scope.withoutPosition);
+		return PositionSrvc.withPosition().then($scope.withPosition, $scope.withoutPosition);
 	};
 
 	$scope.withPosition = function() {
 		console.log('TGCCtrl.withPosition()');
-		AuthSrvc.withNickname().then($scope.withNickname);
+		return AuthSrvc.withNickname().then($scope.withNickname);
 	};
 	
 	$scope.withoutPosition = function() {
 		console.log('TGCCtrl.withoutPosition()');
+		return ErrorSrvc.showError('Your position could not be determined', 'Geoposition');
 	};
 	
 	$scope.withNickname = function(nickname) {
 		console.log('TGCCtrl.withNickname()', nickname);
 		$scope.data.nickname = nickname;
-		WebsocketSrvc.withConnection().then($scope.withConnection, $scope.withoutConnection);
+		return WebsocketSrvc.withConnection().then($scope.withConnection, $scope.withoutConnection);
 	};
 	
 	$scope.withConnection = function() {
 		console.log('TGCCtrl.withConnection()');
-		TGCCommandSrvc.tgcHelo($scope.data.nickname, PositionSrvc.CURRENT).then(function(data){
-			$scope.loadMap(JSON.parse(data));
+		return TGCCommandSrvc.tgcHelo($scope.data.nickname, PositionSrvc.CURRENT).then(function(data) {
+			data = JSON.parse(data)
+			GWF_USER.update(data.player);
+			$scope.loadMap(data);
 		});
 	};
 	
 	$scope.withoutConnection = function() {
 		console.log('TGCCtrl.withoutConnection()');
+		return ErrorSrvc.showError('Connection failed', 'Websocket').then($scope.navigateToMap);
 	};
 	
 	$scope.loadMap = function(ehloData) {
@@ -67,7 +71,7 @@ angular.module('gwf4')
 		$scope.data.timestamp = ehloData.timestamp;
 		ErrorSrvc.showMessage(ehloData.welcome_message, 'TGC '+ehloData.server_version);
 		PlayerSrvc.OWN = PlayerSrvc.updatePlayerCache(ehloData.player);
-		$scope.refreshSidebar().then(function() {
+		return $scope.refreshSidebar().then(function() {
 			$scope.requestPage(GWF_WEB_ROOT+'tgc-game?ajax=1');
 		});
 	};

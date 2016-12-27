@@ -2,6 +2,7 @@
 require_once 'util/TGC_Const.php';
 require_once 'util/TGC_Logic.php';
 require_once 'util/TGC_Position.php';
+require_once 'util/TGC_Race.php';
 require_once 'TGC_Player.php';
 require_once 'TGC_Bot.php';
 require_once 'TGC_Attack.php';
@@ -21,7 +22,7 @@ final class Module_Tamagochi extends GWF_Module
 	### Module ###
 	##############
 	public function getVersion() { return 4.05; }
-	public function getClasses() { return array('TGC_Player', 'TGC_Bot'); }
+	public function getClasses() { return array('TGC_Player'); }
 	public function getDefaultPriority() { return 64; }
 	public function getDefaultAutoLoad() { return true; }
 	public function onLoadLanguage() { return $this->loadLanguage('lang/tamagochi'); }
@@ -32,10 +33,10 @@ final class Module_Tamagochi extends GWF_Module
 	##############
 	public function cfgWelcomeMessage() { return $this->getModuleVar('tgc_welcome_msg', 'TGCv1'); }
 	public function cfgBots() { return $this->getModuleVarBool('tgc_bots', '1'); }
-	public function cfgMaxBots() { return $this->getModuleVarInt('tgc_max_bots', '64'); }
-	public function cfgMaxAssassinBots() { return $this->getModuleVarInt('tgc_max_assassin_bots', '15'); }
-	public function cfgMaxNimdaBots() { return $this->getModuleVarInt('tgc_max_nimda_bots', '3'); }
-	public function cfgMaxRobberBots() { return $this->getModuleVarInt('tgc_max_loser_bots', '40'); }
+	public function cfgMaxBots() { return $this->getModuleVarInt('tgc_max_bots', '3'); }
+	public function cfgMaxAssassinBots() { return $this->getModuleVarInt('tgc_max_assassin_bots', '1'); }
+	public function cfgMaxNimdaBots() { return $this->getModuleVarInt('tgc_max_nimda_bots', '1'); }
+	public function cfgMaxRobberBots() { return $this->getModuleVarInt('tgc_max_loser_bots', '1'); }
 	
 	###############
 	### Startup ###

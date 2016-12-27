@@ -27,18 +27,18 @@ class TGC_Player extends GDO
 		return array(
 			'p_uid' => array(GDO::PRIMARY_KEY|GDO::UINT),
 			'p_type' => array(GDO::VARCHAR|GDO::ASCII|GDO::CASE_S, GDO::NULL, 16),
-// 			'p_race' => array(GDO::ENUM, TGC_Const::NONE, TGC_Const::$RACES),
+			'p_race' => array(GDO::ENUM, TGC_Const::NONE, TGC_Race::enumRaces()),
 
 			# Base
 			'p_gold' => array(GDO::UINT, 50),
 
-			'p_max_hp' => array(GDO::UINT, 10),
-			'p_max_mp' => array(GDO::UINT, 0),
+			'p_max_hp' => array(GDO::MEDIUM|GDO::UINT, 10),
+			'p_max_mp' => array(GDO::MEDIUM|GDO::UINT, 0),
 				
-			'p_strength' => array(GDO::UINT, 0),
-			'p_dexterity' => array(GDO::UINT, 0),
-			'p_wisdom' => array(GDO::UINT, 0),
-			'p_intelligence' => array(GDO::UINT, 0),
+			'p_strength' => array(GDO::MEDIUM|GDO::UINT, 0),
+			'p_dexterity' => array(GDO::MEDIUM|GDO::UINT, 0),
+			'p_wisdom' => array(GDO::MEDIUM|GDO::UINT, 0),
+			'p_intelligence' => array(GDO::MEDIUM|GDO::UINT, 0),
 			
 			'p_fighter' => array(GDO::TINY|GDO::UINT, 0),
 			'p_ninja' => array(GDO::TINY|GDO::UINT, 0),
@@ -139,6 +139,17 @@ class TGC_Player extends GDO
 		return $value;
 	}
 	
+	#############
+	### Score ###
+	#############
+	public function base($field) { return isset($this->base[$field]) ? $this->base[$field] + 1 : 1; }
+	public function power($field) { return $this->adjusted[$field]; }
+	public function average($field) { return TGC_Global::average($field); }
+	
+	public function compareTo(TGC_Player $player, $field) { return $this->compare($this->power($field), $player->power($field)); }
+	public function compareAvg($field) { return $this->compare($this->power($field), $this->average($field)); }
+	public function compare($p1, $p2) { return Common::clamp( ($p1 - $p2) / ($p1 + $p2), 0.01, 1.00); }
+	
 	##############
 	### Fields ###
 	##############
@@ -187,17 +198,6 @@ class TGC_Player extends GDO
 		}
 		return sprintf('%s: %s', $this->displayName(), implode(' - ', $powers))."\n";
 	}
-	
-	#############
-	### Score ###
-	#############
-	public function base($field) { return isset($this->base[$field]) ? $this->base[$field] + 1 : 1; }
-	public function power($field) { return $this->adjusted[$field]; }
-	public function average($field) { return TGC_Global::average($field); }
-
-	public function compareTo(TGC_Player $player, $field) { return $this->compare($this->power($field), $player->power($field)); }
-	public function compareAvg($field) { return $this->compare($this->power($field), $this->average($field)); }
-	public function compare($p1, $p2) { return Common::clamp( ($p1 - $p2) / ($p1 + $p2), 0.01, 1.00); }
 	
 	###########
 	### DTO ###
@@ -539,6 +539,14 @@ class TGC_Player extends GDO
 		));
 		$payload = TGC_Commands::payload(json_encode($payload), $mid);
 		$this->sendCommand('TGC_LVLUP', $payload);
+	}
+	
+	############
+	### Tick ###
+	############
+	public function tick($tick)
+	{
+		$this->rehashFeels();
 	}
 	
 }
