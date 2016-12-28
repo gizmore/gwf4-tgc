@@ -108,7 +108,7 @@ class TGC_Player extends GDO
 	public function lng() { return $this->lng; }
 	public function hasPosition() { return !!$this->lat; }
 	
-	public function isDead() { return $this->hp <= 0; }
+	public function isDead() { return $this->hp() <= 0; }
 	public function giveHP($hp) { $this->base['hp'] = Common::clamp($this->hp() + $hp, 0, $this->maxHP()); $this->feel('health'); }
 	public function giveMP($mp) { $this->base['mp'] = Common::clamp($this->mp() + $mp, 0, $this->maxMP()); }
 	
@@ -400,12 +400,7 @@ class TGC_Player extends GDO
 		}
 		$this->adjusted = array();
 		$this->rehash();
-		$this->base['hp'] = $this->maxHP();
-		$this->base['mp'] = $this->maxMP();
-		$this->endurance = $this->dexterity();
-		$this->rehashFeels();
-		$this->giveHP(0);
-		$this->giveMP(0);
+		$this->respawn();
 	}
 	
 	public function rehash()
@@ -462,9 +457,9 @@ class TGC_Player extends GDO
 		$newLevel = TGC_Logic::levelForXP($xp);
 		if ($oldLevel != $newLevel)
 		{
-			return $this->saveVar('p_'.$skill, $newLevel.'');
 			$this->base[$skill] = $newLevel;
 			$this->adjusted[$skill] = $newLevel;
+			return $this->saveVar('p_'.$skill, $newLevel.'');
 		}
 		return false;
 	}
@@ -539,6 +534,28 @@ class TGC_Player extends GDO
 		));
 		$payload = TGC_Commands::payload(json_encode($payload), $mid);
 		$this->sendCommand('TGC_LVLUP', $payload);
+	}
+	
+	############
+	### Kill ###
+	############
+	public function deletePlayer()
+	{
+		return $this->delete();
+	}
+	
+	public function killedBy(TGC_Player $killer)
+	{
+		$this->respawn();
+	}
+	
+	public function respawn()
+	{
+		$this->base['hp'] = $this->maxHP();
+		$this->base['mp'] = $this->maxMP();
+		$this->giveHP(0); $this->giveMP(0);
+		$this->endurance = $this->dexterity();
+		$this->rehashFeels();
 	}
 	
 	############

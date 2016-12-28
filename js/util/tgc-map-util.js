@@ -58,6 +58,7 @@ angular.module('gwf4')
 	};
 	
 	MapUtil.addMarkerForPlayer = function(player) {
+		console.log('MapUtil.addMarkerForPlayer()', player, player.lat(), player.lng());
 		player.marker = new google.maps.Marker({
 			position: player.latLng(),
 			map: MapUtil.map(),
@@ -91,7 +92,8 @@ angular.module('gwf4')
 		return player;
 	};
 	
-	MapUtil.movePlayer = function(player, latLng) {
+	MapUtil.movePlayer = function(player) {
+		console.log('MapUtil.movePlayer()', player, player.lat(), player.lng());
 		var marker = player.marker ? player.marker : MapUtil.addMarkerForPlayer(player);
 		MapUtil.styleMarkerForPlayer(player);
 		ShapeUtil.initShape(player, MapUtil.map());

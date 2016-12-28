@@ -21,19 +21,15 @@ class TGCAI_Nimda extends TGC_AIScript
 	
 	public function findTarget()
 	{
-		if (!($target = $this->bestHuman('score_humanLeader')))
-		{
-			$target = $this->bestPlayer('score_humanLeader');
-		}
-		return $target;
+		return $this->bestHuman('score_humanLeader');
 	}
 	
 	public function tick($tick)
 	{
 		if ($target = $this->currentEnemyTarget())
 		{
-			$this->moveNear($target, true);
 			$this->bruteForce($target);
+			$this->moveNear($target, true);
 		}
 		else
 		{

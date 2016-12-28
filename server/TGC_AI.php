@@ -50,8 +50,8 @@ final class TGC_AI
 		{
 			$bot instanceof TGC_Bot;
 			$bot->setUser(new GWF_User($bot->getGDOData()));
-			$bot->afterLoad();
 			$this->addBot($bot);
+			$bot->afterLoad();
 		}
 	}
 	
@@ -132,6 +132,7 @@ final class TGC_AI
 		$user = GWF_Guest::blankUser(array(
 			'user_options' => GWF_User::BOT,
 			'user_name' => '#'.microtime(true),
+			'user_guest_name' => $type.'#'.$this->spawncounter++,
 			'user_regdate' => GWF_Time::getDate(),
 			'user_saved_at' => GWF_Time::getDate(),
 		));
@@ -139,6 +140,7 @@ final class TGC_AI
 		{
 			return false;
 		}
+		
 		if (!$user->saveVars(array(
 			'user_name' => '#B#'.$user->getID(),
 		)))

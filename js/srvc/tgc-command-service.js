@@ -8,6 +8,7 @@ TGC.service('TGCCommandSrvc', function($rootScope, $injector, ErrorSrvc, Websock
 	CommandSrvc.getMapUtil = function() { CommandSrvc.MAPUTIL = CommandSrvc.MAPUTIL || $injector.get('MapUtil'); return CommandSrvc.MAPUTIL; };
 	CommandSrvc.getChatSrvc = function() { CommandSrvc.CHATSERVICE = CommandSrvc.CHATSERVICE || $injector.get('ChatSrvc'); return CommandSrvc.CHATSERVICE; };
 	CommandSrvc.getPlayerSrvc = function() { CommandSrvc.PLAYERSERVICE = CommandSrvc.PLAYERSERVICE || $injector.get('PlayerSrvc'); return CommandSrvc.PLAYERSERVICE; };
+	CommandSrvc.getLevelupDlg = function() { CommandSrvc.LEVELUPDIALOG = CommandSrvc.LEVELUPDIALOG || $injector.get('LevelupDlg'); return CommandSrvc.LEVELUPDIALOG; };
 	
 	/////////////////////
 	// Client commands //
@@ -65,15 +66,15 @@ TGC.service('TGCCommandSrvc', function($rootScope, $injector, ErrorSrvc, Websock
 	/////////////////////
 	// Server commands //
 	/////////////////////
-	CommandSrvc.PONG = function($scope, payload) {
-		console.log('CommandSrvc.PONG()', payload);
-		$scope.data.version = payload;
-	};
+//	CommandSrvc.PONG = function($scope, payload) {
+//		console.log('CommandSrvc.PONG()', payload);
+//		$scope.data.version = payload;
+//	};
 	
-	CommandSrvc.POS = function($scope, payload) {
-		console.log('CommandSrvc.POS()', payload);
+	CommandSrvc.TGC_POS = function(payload) {
+		console.log('CommandSrvc.TGC_POS()', payload);
 		var data = JSON.parse(payload);
-		var name = data.player.name;
+		var name = data.player.user_name;
 		var player = null;
 		
 		var MapUtil = CommandSrvc.getMapUtil();
@@ -83,17 +84,24 @@ TGC.service('TGCCommandSrvc', function($rootScope, $injector, ErrorSrvc, Websock
 			player = PlayerSrvc.getPlayer(name);
 		}
 		else {
-			player = new window.TGC.Player(data.player, null, null);
+			player = new TGC_Player(data.player, null, null);
 			PlayerSrvc.addPlayer(player);
 			MapUtil.addPlayer(player);
 		}
-		player.moveTo(data.pos.lat, data.pos.lng)
+		player.moveTo(data.player.lat, data.player.lng)
 		MapUtil.movePlayer(player);
 		PlayerSrvc.updateCacheForPlayer(player, data);
 		return player;
 	};
 	
-	CommandSrvc.CHAT = function($scope, payload) {
+	CommandSrvc.TGC_LVLUP = function(payload) {
+		console.log('CommandSrvc.TGC_LVLUP()', payload);
+		var LevelupDlg = CommandSrvc.getLevelupDlg();
+		var data = JSON.parse(payload);
+		return LevelupDlg.show(data);
+	};
+	
+	CommandSrvc.TGC_CHAT = function(payload) {
 		console.log('CommandSrvc.CHAT()', payload);
 		var MapUtil = CommandSrvc.getMapUtil();
 		var ChatSrvc = CommandSrvc.getChatSrvc();
@@ -110,7 +118,7 @@ TGC.service('TGCCommandSrvc', function($rootScope, $injector, ErrorSrvc, Websock
 		}
 	};
 	
-	CommandSrvc.QUIT = function($scope, payload) {
+	CommandSrvc.TGC_QUIT = function(payload) {
 		console.log('CommandSrvc.QUIT()', payload);
 		var MapUtil = CommandSrvc.getMapUtil();
 		var PlayerSrvc = CommandSrvc.getPlayerSrvc();
@@ -125,7 +133,7 @@ TGC.service('TGCCommandSrvc', function($rootScope, $injector, ErrorSrvc, Websock
 		}
 	};
 	
-	CommandSrvc.CAST = function($scope, payload) {
+	CommandSrvc.TGC_CAST = function(payload) {
 		var MapUtil = CommandSrvc.getMapUtil();
 		var ChatSrvc = CommandSrvc.getChatSrvc();
 		var PlayerSrvc = CommandSrvc.getPlayerSrvc();

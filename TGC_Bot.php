@@ -20,6 +20,33 @@ final class TGC_Bot extends TGC_Player
 	############
 	public function send($messageText) { printf("%s << %s\n", $this->displayName(), $messageText); }
 	
+	############
+	### Kill ###
+	############
+	public function killedBy(TGC_Player $killer)
+	{
+		if ($this->deletePlayer())
+		{
+			$payload = json_encode(array(
+				'user_name' => $this->getName(),
+				'killer' => $killer->getName(),
+			));
+			$this->forNearMe(function(TGC_Player $player, $payload) {
+				$player->sendCommand('TGC_BOTKILL', $payload);
+			}, $payload);
+			TGC_Global::removePlayer($this);
+		}
+	}
+	
+	public function deletePlayer()
+	{
+		if (parent::deletePlayer())
+		{
+			return $this->getUser()->delete();
+		}
+		return false;
+	}
+	
 	##############
 	### Events ###
 	##############
@@ -32,12 +59,13 @@ final class TGC_Bot extends TGC_Player
 	
 	private function initBotPosition()
 	{
-		$this->setPosition(52.0, 10.0);
+		$this->setPosition(52.0+rand(1, 1000)/1000, 10.0+rand(1, 1000)/1000);
 	}
 	
 	public function tick($tick)
 	{
 		parent::tick($tick);
+		$this->botPos();
 		$this->command = null;
 		$this->script->tick($tick);
 		if ($this->command)
@@ -45,6 +73,11 @@ final class TGC_Bot extends TGC_Player
 			list($command, $payload) = $this->command;
 			$this->tickExecute($command, $payload);
 		}
+	}
+	
+	private function botPos()
+	{
+		$this->aiMove($this->lat(), $this->lng(), true);
 	}
 	
 	private function tickExecute($command, $payload)

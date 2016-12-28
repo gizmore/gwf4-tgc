@@ -36,7 +36,7 @@ final class TGC_Commands extends GWS_Commands
 	public function disconnect(GWF_User $user) {
 		parent::disconnect($user);
 		$player = self::player($user);
-		TGC_Global::removePlayer($user->getName());
+		TGC_Global::removePlayer($player);
 		foreach (TGC_Global::$PLAYERS as $remainingPlayer)
 		{
 // 			if ($player->isNear($remainingPlayer))

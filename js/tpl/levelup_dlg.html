@@ -1,0 +1,23 @@
+<md-dialog aria-label="Player dialog">
+	<md-dialog-content layout-padding>
+		
+		<p>{{player.name()}}</p>
+		
+		<lvlup-bar>MaxHP: {{player.lastMaxHP()}} => {{player.maxHP()}}</lvlup-bar>
+		<lvlup-bar>MaxMP: {{player.lastMaxMP()}} => {{player.maxMP()}}</lvlup-bar>
+
+		<lvlup-bar>Fighter: {{player.lastFighterLevelName()}} => {{player.fighterLevelName()}}</lvlup-bar>
+		<lvlup-bar>Ninja: {{player.lastNinjaLevelName()}} => {{player.ninjaLevelName()}}</lvlup-bar>
+		<lvlup-bar>Priest: {{player.lastPriestLevelName()}} => {{player.priestLevelName()}}</lvlup-bar>
+		<lvlup-bar>Wizard: {{player.lastWizardLevelName()}} => {{player.wizardLevelName()}}</lvlup-bar>
+		
+		<lvlup-bar>Strength: {{player.lastStrength()} => {{player.strength()}}</lvlup-bar>
+		<lvlup-bar>Dexterity: {{player.lastDexterity()} => {{player.dexterity()}}</lvlup-bar>
+		<lvlup-bar>Wisdom: {{player.lastWisdom()} => {{player.wisdom()}}</lvlup-bar>
+		<lvlup-bar>Intelligence: {{player.lastIntelligence()} => {{player.intelligence()}}</lvlup-bar>
+		
+	</md-dialog-content>
+	<md-dialog-actions>
+		<md-button ng-click="closeDialog()" class="md-primary" aria-label="Close dialog">Close Dialog</md-button>
+	</md-dialog-actions>
+</md-dialog>

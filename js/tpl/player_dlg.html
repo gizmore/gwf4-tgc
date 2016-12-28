@@ -1,23 +1,28 @@
 <md-dialog aria-label="Player dialog">
 	<md-dialog-content layout-padding>
 		
-		<p>{{player.name()}} registered {{player.registeredAt()|date}}</p>
+		<p>{{player.displayName()}} registered {{player.registeredAt()|date}}</p>
+		
+		<div ng-hide="!player.isOwn()">
+			<p>{{player.hp()}} / {{player.maxHP()}} HP</p> 
+			<p>{{player.mp()}} / {{player.maxMP()}} MP</p>
+		</div> 
 		
 		<md-list>
 			<md-list-item>
-				<div class="tgc-stat-number"><span>Fighter</span>: <b>{{player.fighterLevel()}}</b></div>
+				<div class="tgc-stat-number"><span>Fighter</span>: <b>{{player.fighterLevelName()}}</b></div>
 				<md-button ng-click="fight()" class="md-primary">Fight</md-button>
 			</md-list-item>
 			<md-list-item>
-				<div class="tgc-stat-number"><span>Ninja</span>: <b>{{player.ninjaLevel()}}</b></div>
+				<div class="tgc-stat-number"><span>Ninja</span>: <b>{{player.ninjaLevelName()}}</b></div>
 				<md-button ng-click="attack()" class="md-primary">Attack</md-button>
 			</md-list-item>
 			<md-list-item>
-				<div class="tgc-stat-number"><span>Priest</span>: <b>{{player.priestLevel()}}</b></div>
+				<div class="tgc-stat-number"><span>Priest</span>: <b>{{player.priestLevelName()}}</b></div>
 				<md-button ng-click="brew()" class="md-primary">Brew</md-button>
 			</md-list-item>
 			<md-list-item>
-				<div class="tgc-stat-number"><span>Wizard</span>: <b>{{player.wizardLevel()}}</b></div>
+				<div class="tgc-stat-number"><span>Wizard</span>: <b>{{player.wizardLevelName()}}</b></div>
 				<md-button ng-click="cast()" class="md-primary">Cast</md-button>
 			</md-list-item>
 		</md-list>

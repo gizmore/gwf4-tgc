@@ -43,13 +43,13 @@ abstract class TGC_AIScript
 	protected $difficulty;
 	
 	protected function players() { return TGC_Global::$PLAYERS; }
-	protected function humans() { return TGC_Global::$PLAYERS; }
-	protected function bots() { return TGC_Global::$PLAYERS; }
+	protected function humans() { return TGC_Global::$HUMANS; }
+	protected function bots() { return TGC_Global::$BOTS; }
 
 	protected function randomBot() { return $this->randomTarget($this->bots()); }
 	protected function randomHuman() { return $this->randomTarget($this->humans()); }
 	protected function randomPlayer() { return $this->randomTarget($this->players()); }
-	protected function randomTarget(array $targets) { return GWF_Random::arrayItem($targets); }
+	protected function randomTarget(array $targets) { return empty($targets) ? null : GWF_Random::arrayItem($targets); }
 	
 	protected function bestBot($scoreMethod, $topShuffle=3) { return $this->bestTarget($this->bots(), $scoreMethod, $topShuffle); }
 	protected function bestHuman($scoreMethod, $topShuffle=3) { return $this->bestTarget($this->humans(), $scoreMethod, $topShuffle); }
@@ -111,6 +111,7 @@ abstract class TGC_AIScript
 	protected function bestKillChancePower(TGC_Player $player)
 	{
 		$bestChance = $this->bestKillChance($player);
+// 		printf("%s vs %s  –  BestKillChancePower: %s\n", $this->bot->displayName(), $player->displayName(), $bestChance[self::BEST_POWER]);
 		return $bestChance[self::BEST_POWER];
 	}
 	
@@ -151,6 +152,8 @@ abstract class TGC_AIScript
 	###############
 	private function bestTarget(array $targets, $scoreMethod, $topShuffle=3)
 	{
+		$dbg = 0;
+		if ($dbg) echo "Best Target for {$this->bot->displayName()}\n";
 		$possibleTargets = array();
 		foreach ($targets as $target)
 		{
@@ -162,18 +165,21 @@ abstract class TGC_AIScript
 				}
 			}
 		}
-// 		$this->printTargets($possibleTargets);
+		if (empty($possibleTargets))
+		{
+			return null;
+		}
+		if ($dbg) $this->printTargets($possibleTargets);
 		usort($possibleTargets, function($a, $b) {
-			return $a[1] - $a[1];
+			return $a[1] - $b[1];
 		});
-// 		$this->printTargets($possibleTargets);
+		if ($dbg) $this->printTargets($possibleTargets);
 		$possibleTargets = array_slice($possibleTargets, 0, $topShuffle);
-// 		$this->printTargets($possibleTargets);
+		if ($dbg) $this->printTargets($possibleTargets);
 		shuffle($possibleTargets);
-// 		$this->printTargets($possibleTargets);
+		if ($dbg) $this->printTargets($possibleTargets);
 		$target = array_pop($possibleTargets);
-// 		echo "Final: ";
-// 		$this->printTarget($target);
+		if ($dbg) echo "Final: "; $this->printTarget($target);
 		return $target[0];
 	}
 	
@@ -199,9 +205,11 @@ abstract class TGC_AIScript
 	public function botrand($zero=0.0, $one=1.0) { return $this->rand($zero, $one, $this->difficulty); }
 	public function rand($zero=0.0, $one=1.0, $difficulty=0.0)
 	{
-		$min = (int)(Common::clamp($zero+$difficulty, 0.0, 1.0) * 1000.0);
-		$max = (int)(Common::clamp($one+$difficulty, $min, 1.0) * 1000.0);
-		return GWF_Random::rand($min, $max) / 1000.0;
+		$min = (int)(Common::clamp($zero+$difficulty, 0.0, 1.0) * 1000);
+		$max = (int)(Common::clamp($one+$difficulty, $min/1000.0, 1.0) * 1000);
+		$result = GWF_Random::rand($min, $max) / 1000.0;
+// 		printf("Rand ($min-$max): %s\n", $result);
+		return $result;
 	}
 	
 }

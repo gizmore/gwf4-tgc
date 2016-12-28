@@ -29,9 +29,12 @@ TGC.service('PlayerDlg', function($q, $mdDialog, ErrorSrvc, TGCCommandSrvc, Play
 				}
 			};
 			$scope.slapMessage = function(data) {
-				return sprintf('%s %s %s with %s %s %s.\n%s Damage!', data.attacker, data.adverb, data.verb, data.defender, data.adjective, data.noun, data.power);
+				var damage = data.critical ? sprintf('<critical>%s damage</critical>', data.damage) : sprintf('This caused %s damage.', data.damage);
+				damage = data.killed ? sprintf('<b>Killed</b> with %s!') : damage;
+				return sprintf('%s %s %s %s with %s %s.<br/>%s', data.attacker, data.adverb, data.verb, data.defender, data.adjective, data.noun, damage);
 			}
 			$scope.afterFight = function(result) {
+				console.log('PlayerDlg.afterFight()', result);
 				if (!result.startsWith('ERR')) {
 					$scope.closeDialog();
 					var data = JSON.parse(result);

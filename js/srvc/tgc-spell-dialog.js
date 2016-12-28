@@ -24,16 +24,16 @@ TGC.service('SpellDlg', function($q, $mdDialog, ErrorSrvc, TGCCommandSrvc, Playe
 //				resolve();
 			};
 			$scope.brew = function() {
-				TGCCommandSrvc.brew(player, $scope.spelltext()).then($scope.closeDialog);
+				TGCCommandSrvc.tgcBrew(player, $scope.spelltext()).then($scope.closeDialog);
 			};
 			$scope.cast = function() {
-				TGCCommandSrvc.cast(player, $scope.spelltext()).then($scope.closeDialog);
+				TGCCommandSrvc.tgcCast(player, $scope.spelltext()).then($scope.closeDialog);
 			};
 			$scope.spelltext = function() {
 				return $scope.data.selected.join(',');
 			};
 			$scope.spell = function($event, row, col) {
-				var rune = window.TGCConfig.runes[row][col]
+				var rune = window.TGC_CONFIG.runes[row][col]
 				$scope.data.selected = $scope.data.selected.slice(0, row);
 				$scope.data.selected.push(rune);
 				$scope.data.selectedIDs = $scope.data.selectedIDs.slice(0, row);

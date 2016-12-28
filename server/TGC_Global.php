@@ -33,26 +33,35 @@ final class TGC_Global
 	###############
 	public static function addPlayer(TGC_Player $player)
 	{
+		$name = $player->getName();
 		if ($player->isBot())
 		{
-			self::$BOTS[] = $player;
+			self::$BOTS[$name] = $player;
 		}
 		else
 		{
-			self::$HUMANS[] = $player;
+			self::$HUMANS[$name] = $player;
 		}
-	
-		self::$PLAYERS[$player->getName()] = $player;
+		self::$PLAYERS[$name] = $player;
 	}
-	
-	public static function removePlayer($name)
+
+	public static function removePlayer(TGC_Player $player)
 	{
+		$name = $player->getName();
+		if ($player->isBot())
+		{
+			unset(self::$BOTS[$name]);
+		}
+		else
+		{
+			unset(self::$HUMANS[$name]);
+		}
 		unset(self::$PLAYERS[$name]);
 	}
 	
 	public static function getOrCreatePlayer(GWF_User $user)
 	{
-		$name = $user->displayName();
+		$name = $user->getName();
 		if (!($player = self::getOrLoadPlayer($name)))
 		{
 			$player = self::createPlayer($user);

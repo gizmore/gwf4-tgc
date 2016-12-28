@@ -17,7 +17,8 @@ final class TGC_Attack
 	
 	public function dice($skill)
 	{
-		if ($this->attacker === $this->defender) {
+		if ($this->attacker === $this->defender)
+		{
 			return $this->attacker->sendError(TGC_Commands::payload('ERR_ATTACK_SELF', $this->mid));
 		}
 		
@@ -34,50 +35,59 @@ final class TGC_Attack
 		$verb = $this->randomItem($slaps['verbs']);
 		$adjective = $this->randomItem($slaps['adjectives']);
 		$noun = $this->randomItem($slaps['nouns']);
-		$adverbName = $adverb[0];
-		$adverbPower = $adverb[1];
-		$verbName = $verb[0];
-		$verbPower = $verb[1];
-		$adjectiveName = $adjective[0];
-		$adjectivePower = $adjective[1];
-		$nounName = $noun[0];
-		$nounPower = $noun[1];
+		$adverbName = $adverb[0]; $adverbPower = $adverb[1];
+		$verbName = $verb[0]; $verbPower = $verb[1];
+		$adjectiveName = $adjective[0]; $adjectivePower = $adjective[1];
+		$nounName = $noun[0]; $nounPower = $noun[1];
 		
+		# Power
 		$power = round(1 * ($adverbPower/10.0) * ($verbPower/10.0) * ($adjectivePower/10.0) * ($nounPower/10.0));
-		
-		$crit = $this->isCriticalHit($a, $d);
-		if ($crit) {
-			$power *= 2;
-		}
-		
 		$power *= $this->modePowerMultiplier($a, $d);
 		$power *= $this->skillPowerMultiplier($a, $d, $skill);
 		$power *= $this->colorPowerMultiplier($a, $d);
 		$power *= $this->elementPowerMultiplier($a, $d);
+		if ($critical = $this->isCriticalHit($a, $d))
+		{
+			$power *= 2;
+		}
 
+		# Deal damage
+		$damage = round($power);
+		$d->giveHP(-$damage);
+		if ($killed = $d->isDead())
+		{
+			$d->killedBy($a);
+		}
+		
+		# Tell about slap.
+		printf("%s attacks %s with power %s: %s/%sHP left.\n", $a->displayName(), $d->displayName(), $power, $d->hp(), $d->maxHP());
+		
 		$payload = array(
+			'attacker' => $a->displayName(),
 			'adverb' => $adverbName,
-			'verb' => $verbName,
-			'adjective' => $adjectiveName,
-			'nounPower' => $nounName,
-			'adverbPower' => $adverbPower,
-			'verbPower' => $verbPower,
-			'adjectivePower' => $adjectivePower,
-			'noun' => $nounName,
-			'power' => $power,
 			'type' => $skill,
-			'attacker' => $a->getName(),
-			'defender' => $d->getName(),
-			'critical' => $crit,
+			'verb' => $verbName,
+			'defender' => $d->displayName(),
+			'adjective' => $adjectiveName,
+			'noun' => $nounName,
+			'critical' => $critical,
+			'damage' => $damage,
+			'killed' => $killed,
+// 			'power' => $power,
+// 			'nounPower' => $nounPower,
+// 			'adverbPower' => $adverbPower,
+// 			'verbPower' => $verbPower,
+// 			'adjectivePower' => $adjectivePower,
 		);
 		$payload = TGC_Commands::payload(json_encode($payload), $this->mid);
+		$a->sendCommand('TGC_SLAP', $payload);
+		$d->sendCommand('TGC_SLAP', $payload);
 		
-		$a->sendCommand('SLAP', $payload);
-		$d->sendCommand('SLAP', $payload);
-		
+		# Give XP
 		$a->giveXP($skill, $power, $this->mid);
+		$d->giveXP($skill, $power/10, $this->mid);
 	}
-
+	
 	private function randomItem($slaps)
 	{
 		return $slaps[array_rand($slaps)];
@@ -90,37 +100,43 @@ final class TGC_Attack
 	private function modePowerMultiplier(TGC_Player $a, TGC_Player $d)
 	{
 		$am = $a->getVar('p_active_mode'); $dm = $d->getVar('p_active_mode');
-		if ($am == $dm) {
+		if (($am == $dm) || ($am === 'none'))
+		{
 			return 1.00;
 		}
-		else if ($am == 'attacker') {
+		else if ($am == 'attacker')
+		{
 			return 1.05;
 		}
-		else {
+		else
+		{
 			return 0.95;
 		}
 	}
 
 	private function skillPowerMultiplier(TGC_Player $attacker, TGC_Player $defender, $skill)
 	{
-		return 1.0;
-		$af = $attacker->getVar('p_fighter_level'); $df = $defender->getVar('p_fighter_level');
-		$an = $attacker->getVar('p_ninja_level'); $dn = $defender->getVar('p_ninja_level');
-		$ap = $attacker->getVar('p_priest_level'); $dp = $defender->getVar('p_priest_level');
-		$aw = $attacker->getVar('p_wizard_level'); $dw = $defender->getVar('p_wizard_level');
+		return $attacker->compareTo($defender, $skill);
+// 		$af = $attacker->fighter(); $df = $defender->fighter();
+// 		$an = $attacker->ninja();   $dn = $defender->ninja();
+// 		$ap = $attacker->priest();  $dp = $defender->priest();
+// 		$aw = $attacker->wizard();  $dw = $defender->wizard();
 		
-		switch ($skill)
-		{
-		case 'fighter':
-			$atotal = $af + $an;
-			$dtotal = $df + $dn;
-		case 'ninja':
+// 		switch ($skill)
+// 		{
+// 		case 'fighter':
+// 			$atotal = $af + $an;
+// 			break;
+// 		case 'ninja':
+// 			$dtotal = $df + $dn;
+// 			break;
+				
+// 		case 'priest':
 			
-		case 'priest':
+// 		case 'wizard':
 			
-		case 'wizard':
-			
-		}
+// 		}
+// 		return 1.0;
 	}
 
 	private function colorPowerMultiplier(TGC_Player $attacker, TGC_Player $defender)
