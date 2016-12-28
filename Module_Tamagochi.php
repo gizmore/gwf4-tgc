@@ -101,6 +101,7 @@ final class Module_Tamagochi extends GWF_Module
 		$this->addJavascript('srvc/tgc-command-service.js');
 		$this->addJavascript('srvc/tgc-player-service.js');
 		# Dialog
+		$this->addJavascript('dlg/tgc-levelup-dialog.js');
 		$this->addJavascript('srvc/tgc-player-dialog.js');
 		$this->addJavascript('srvc/tgc-spell-dialog.js');
 		# Util

@@ -71,6 +71,17 @@ TGC.service('TGCCommandSrvc', function($rootScope, $injector, ErrorSrvc, Websock
 //		$scope.data.version = payload;
 //	};
 	
+	CommandSrvc.TGC_BOTKILL = function(payload) {
+		console.log('CommandSrvc.TGC_BOTKILL()', payload);
+		var data = JSON.parse(payload);
+		var MapUtil = CommandSrvc.getMapUtil();
+		var PlayerSrvc = CommandSrvc.getPlayerSrvc();
+		var killer = PlayerSrvc.getPlayer(data.killer);
+		var victim = PlayerSrvc.getPlayer(data.victim);
+		PlayerSrvc.removePlayer(victim);
+		MapUtil.removePlayer(victim);
+	};
+	
 	CommandSrvc.TGC_POS = function(payload) {
 		console.log('CommandSrvc.TGC_POS()', payload);
 		var data = JSON.parse(payload);

@@ -43,7 +43,7 @@ angular.module('gwf4')
 		if (PlayerSrvc.OWN === player) {
 			PlayerSrvc.OWN = null;
 		}
-		delete PlayerSrvc.CACHE(player.name());
+		PlayerSrvc.CACHE[player.name()] = undefined;
 		return player;
 	};
 	

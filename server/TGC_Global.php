@@ -4,7 +4,7 @@ final class TGC_Global
 	private static $INITIAL_SEED = 0;
 	public static $SEED = 31337;
 	public static $TICK = 0;
-	public static $BOTS = array(), $HUMANS = array(), $PLAYERS = array();
+	public static $BOTS = array(), $HUMANS = array(), $PLAYERS = array(), $TYPED_BOTS = array();
 	public static $AVERAGE = array();
 	
 	public static function init($seed)
@@ -12,6 +12,11 @@ final class TGC_Global
 		self::$TICK = 0;
 		self::$INITIAL_SEED = self::$SEED = $seed;
 		self::$BOTS = array(); self::$HUMANS = array(); self::$PLAYERS = array();
+		foreach (TGC_AIScript::init() as $type)
+		{
+			self::$TYPED_BOTS[$type] = array();
+		}
+		
 	}
 
 	############
@@ -37,6 +42,7 @@ final class TGC_Global
 		if ($player->isBot())
 		{
 			self::$BOTS[$name] = $player;
+			self::$TYPED_BOTS[$player->getType()][$name] = $player;
 		}
 		else
 		{
@@ -51,6 +57,7 @@ final class TGC_Global
 		if ($player->isBot())
 		{
 			unset(self::$BOTS[$name]);
+			unset(self::$TYPED_BOTS[$player->getType()][$name]);
 		}
 		else
 		{
@@ -84,7 +91,7 @@ final class TGC_Global
 		}
 		if ($player = self::loadPlayer($name))
 		{
-			self::$PLAYERS[$name] = $player;
+			self::$PLAYERS[$name] = self::$HUMANS[$name] = $player;
 			return $player;
 		}
 		return false;

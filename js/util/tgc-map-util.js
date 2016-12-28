@@ -47,6 +47,10 @@ angular.module('gwf4')
 			MapUtil.movePlayer(player);
 		}
 	};
+
+	MapUtil.removePlayer = function(player) {
+		return MapUtil.removeMarkerForPlayer(player);
+	};
 	
 	MapUtil.playerForMarker = function(marker) {
 		for (var player in MapUtil.MARKERS) {
@@ -85,7 +89,7 @@ angular.module('gwf4')
 			player.shape.setMap(null);
 			player.shape = undefined;
 		}
-		delete MapUtil.MARKERS(player);
+		MapUtil.MARKERS[player] = undefined;
 	}
 	
 	MapUtil.addPlayer = function(player) {

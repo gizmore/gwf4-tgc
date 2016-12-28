@@ -28,8 +28,8 @@ final class TGC_Bot extends TGC_Player
 		if ($this->deletePlayer())
 		{
 			$payload = json_encode(array(
-				'user_name' => $this->getName(),
 				'killer' => $killer->getName(),
+				'victim' => $this->getName(),
 			));
 			$this->forNearMe(function(TGC_Player $player, $payload) {
 				$player->sendCommand('TGC_BOTKILL', $payload);

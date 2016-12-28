@@ -1,6 +1,6 @@
 'use strict';
 var TGC = angular.module('gwf4');
-TGC.service('PlayerDlg', function($q, $mdDialog, ErrorSrvc, TGCCommandSrvc, PlayerSrvc, SpellDlg) {
+TGC.service('PlayerDlg', function($q, $mdDialog, ErrorSrvc, TGCCommandSrvc, PlayerSrvc, SpellDlg, MapUtil) {
 	
 	var PlayerDlg = this;
 	
@@ -29,8 +29,8 @@ TGC.service('PlayerDlg', function($q, $mdDialog, ErrorSrvc, TGCCommandSrvc, Play
 				}
 			};
 			$scope.slapMessage = function(data) {
-				var damage = data.critical ? sprintf('<critical>%s damage</critical>', data.damage) : sprintf('This caused %s damage.', data.damage);
-				damage = data.killed ? sprintf('<b>Killed</b> with %s!') : damage;
+				var damage = data.critical ? sprintf('<critical>%s damage</critical>', data.damage) : data.damage;
+				damage = data.killed ? sprintf('<b>Killed</b> with %s!', damage) : sprintf('This caused %s.', damage);
 				return sprintf('%s %s %s %s with %s %s.<br/>%s', data.attacker, data.adverb, data.verb, data.defender, data.adjective, data.noun, damage);
 			}
 			$scope.afterFight = function(result) {

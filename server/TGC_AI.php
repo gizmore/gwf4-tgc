@@ -8,7 +8,7 @@ final class TGC_AI
 	private $handler;
 	private $spawncounter = 0;
 	private $lastSpawn = null;
-	private $typedBots, $scripts;
+	private $scripts;
 	
 	###############
 	### Getters ###
@@ -17,7 +17,7 @@ final class TGC_AI
 	public function handler() { return $this->handler; }
 	public function tgc() { return Module_Tamagochi::instance(); }
 	public function bots() { return TGC_Global::$BOTS; }
-	public function scripts() { return $this->scripts; }
+// 	public function scripts() { return $this->scripts; }
 	public function maxBots() { return $this->tgc()->cfgMaxBots(); }
 	public function allowBots() { return $this->tgc()->cfgBots(); }
 	
@@ -30,11 +30,6 @@ final class TGC_AI
 		$this->handler = $handler;
 		$this->spawncounter = 0;
 		$this->scripts = TGC_AIScript::init();
-		$this->typedBots = array();
-		foreach ($this->scripts as $type)
-		{
-			$this->typedBots[$type] = array();
-		}
 		if ($this->allowBots())
 		{
 			$this->cleanup();
@@ -73,7 +68,6 @@ final class TGC_AI
 	#############
 	private function addBot(TGC_Bot $bot)
 	{
-		$this->typedBots[$bot->getType()] = $bot;
 		TGC_Global::addPlayer($bot);
 	}
 	
@@ -106,7 +100,7 @@ final class TGC_AI
 		{
 			foreach ($this->scripts as $type)
 			{
-				$have = count($this->typedBots[$type]);
+				$have = count(TGC_Global::$TYPED_BOTS[$type]);
 				$max = call_user_func(array($this->tgc(), sprintf('cfgMax%sBots', $type)));
 				if ($have < $max)
 				{
