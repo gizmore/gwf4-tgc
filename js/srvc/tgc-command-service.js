@@ -61,8 +61,21 @@ TGC.service('TGCCommandSrvc', function($rootScope, $injector, ErrorSrvc, Websock
 		return WebsocketSrvc.sendJSONCommand('tgcCast', { target: player.name(), runes: runes });
 	};
 	
-	
-	
+	///
+	CommandSrvc.slapTitle = function(data) {
+		switch (data.type) {
+		case 'fighter': return "Fight";
+		case 'ninja': return "Attack";
+		case 'priest': return "Potion";
+		case 'wizard': return "Spell";
+		}
+	};
+	CommandSrvc.slapMessage = function(data) {
+		var damage = data.critical ? sprintf('<critical>%s damage</critical>', data.damage) : data.damage;
+		damage = data.killed ? sprintf('<b>Killed</b> with %s!', damage) : sprintf('This caused %s.', damage);
+		return sprintf('%s %s %s %s with %s %s.<br/>%s', data.attacker, data.adverb, data.verb, data.defender, data.adjective, data.noun, damage);
+	}
+
 	/////////////////////
 	// Server commands //
 	/////////////////////
@@ -80,6 +93,12 @@ TGC.service('TGCCommandSrvc', function($rootScope, $injector, ErrorSrvc, Websock
 		var victim = PlayerSrvc.getPlayer(data.victim);
 		PlayerSrvc.removePlayer(victim);
 		MapUtil.removePlayer(victim);
+	};
+	
+	CommandSrvc.TGC_SLAP = function(payload) {
+		console.log('CommandSrvc.TGC_SLAP()', payload);
+		var data = JSON.parse(payload);
+		ErrorSrvc.showMessage(CommandSrvc.slapMessage(data), CommandSrvc.slapTitle(data));
 	};
 	
 	CommandSrvc.TGC_POS = function(payload) {

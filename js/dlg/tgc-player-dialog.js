@@ -20,27 +20,6 @@ TGC.service('PlayerDlg', function($q, $mdDialog, ErrorSrvc, TGCCommandSrvc, Play
 				$mdDialog.hide();
 				resolve();
 			};
-			$scope.slapTitle = function(data) {
-				switch (data.type) {
-				case 'fighter': return "Fight";
-				case 'ninja': return "Attack";
-				case 'priest': return "Potion";
-				case 'wizard': return "Spell";
-				}
-			};
-			$scope.slapMessage = function(data) {
-				var damage = data.critical ? sprintf('<critical>%s damage</critical>', data.damage) : data.damage;
-				damage = data.killed ? sprintf('<b>Killed</b> with %s!', damage) : sprintf('This caused %s.', damage);
-				return sprintf('%s %s %s %s with %s %s.<br/>%s', data.attacker, data.adverb, data.verb, data.defender, data.adjective, data.noun, damage);
-			}
-			$scope.afterFight = function(result) {
-				console.log('PlayerDlg.afterFight()', result);
-				if (!result.startsWith('ERR')) {
-					$scope.closeDialog();
-					var data = JSON.parse(result);
-					ErrorSrvc.showMessage($scope.slapMessage(data), $scope.slapTitle(data));
-				}
-			};
 			$scope.fight = function() {
 				TGCCommandSrvc.tgcFight(player).then($scope.afterFight);
 			};
@@ -55,7 +34,14 @@ TGC.service('PlayerDlg', function($q, $mdDialog, ErrorSrvc, TGCCommandSrvc, Play
 				$scope.closeDialog();
 				SpellDlg.show(player, 'cast');
 			};
-			
+			$scope.afterFight = function(result) {
+				console.log('PlayerDlg.afterFight()', result);
+				if (!result.startsWith('ERR')) {
+					$scope.closeDialog();
+					var data = JSON.parse(result);
+					ErrorSrvc.showMessage(TGCCommandSrvc.slapMessage(data), TGCCommandSrvc.slapTitle(data));
+				}
+			};
 		}
 		var parentEl = angular.element(document.body);
 		$mdDialog.show({
