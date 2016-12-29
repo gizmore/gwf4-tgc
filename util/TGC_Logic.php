@@ -4,7 +4,7 @@ final class TGC_Logic
 	public static function levelForXP($xp)
 	{
 		$maxLevel = count(TGC_Const::$LEVELS);
-		$level = round(log($xp)-5);
+		$level = round(log($xp, 2.41)-5);
 		return Common::clamp($level, 0, $maxLevel);
 	}
 	
@@ -22,6 +22,11 @@ final class TGC_Logic
 	public static function dice($min=1, $max=6)
 	{
 		return GWF_Random::rand($min, $max); // Here you are, God of random :)
+	}
+	
+	public static function calcRadius(TGC_Player $player)
+	{
+		return $player->dexterity() * 4;
 	}
 	
 }

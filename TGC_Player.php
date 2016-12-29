@@ -170,6 +170,7 @@ class TGC_Player extends GDO
 	public function awake() { return Common::clamp($this->tired - 50 / 100.0, 0.0, 1.0); }
 	public function drought() { return Common::clamp($this->water / 100.0, 0.0, 1.0); }
 	public function satiness() { return Common::clamp($this->food - 50 / 200.0, 0.0, 1.0); }
+	public function giveEndurance($endurance) { $this->endurance = Common::clamp($this->endurance + $endurance, 0.0, $this->dexterity()); }
 	
 	#############
 	### Debug ###
@@ -257,6 +258,7 @@ class TGC_Player extends GDO
 			'nx' => (int)$this->getVar('p_ninja_xp'),
 			'px' => (int)$this->getVar('p_priest_xp'),
 			'wx' => (int)$this->getVar('p_wizard_xp'),
+			'r' => TGC_Logic::calcRadius($this),	
 		);
 	}
 	
@@ -284,7 +286,7 @@ class TGC_Player extends GDO
 			'p_uid' => $user->getID(),
 			'p_type' => $type,
 			'p_gold' => '50',
-			'p_max_hp' => '20',
+			'p_max_hp' => '4',
 			'p_max_mp' => '0',
 			'p_strength' => '0',
 			'p_dexterity' => '0',
@@ -528,11 +530,10 @@ class TGC_Player extends GDO
 		$this->giveHP($gain_hp); $this->giveMP($gain_mp);
 		
 		# Tell player
-		$payload = array_merge($this->ownPlayerDTO(), array(
+		$payload = json_encode(array_merge($this->ownPlayerDTO(), array(
 			'skill' => $skill,
 			'level' => $this->base[$skill],
-		));
-		$payload = TGC_Commands::payload(json_encode($payload), $mid);
+		)));
 		$this->sendCommand('TGC_LVLUP', $payload);
 	}
 	
@@ -558,11 +559,28 @@ class TGC_Player extends GDO
 		$this->rehashFeels();
 	}
 	
+	public function getLoot()
+	{
+		return array();
+	}
+	
+	public function giveLoot(array $loot)
+	{
+		$this->food += $loot['food'];
+		$this->water += $loot['water'];
+		return $this->increase('p_gold', $loot['gold']);
+	}
+	
+	
 	############
 	### Tick ###
 	############
 	public function tick($tick)
 	{
+		$this->giveEndurance($this->ninjaLevel());
+		$this->tired = Common::clamp($this->tired+1, 0, 100);
+		$this->food = Common::clamp($this->food-1, 0, 100);
+		$this->water = Common::clamp($this->water-1, 0, 100);;
 		$this->rehashFeels();
 	}
 	

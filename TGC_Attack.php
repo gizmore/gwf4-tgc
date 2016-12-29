@@ -23,6 +23,7 @@ final class TGC_Attack
 		}
 		
 		$a = $this->attacker; $d = $this->defender;
+		$loot = array();
 
 		$am = $a->getVar('p_active_mode'); $dm = $d->getVar('p_active_mode');
 		$as = $a->getVar('p_active_skill'); $ds = $d->getVar('p_active_skill');
@@ -57,6 +58,8 @@ final class TGC_Attack
 		if ($killed = $d->isDead())
 		{
 			$d->killedBy($a);
+			$loot = $this->getLoot();
+			$a->giveLoot($loot);
 		}
 		
 		# Tell about slap.
@@ -73,6 +76,7 @@ final class TGC_Attack
 			'critical' => $critical,
 			'damage' => $damage,
 			'killed' => $killed,
+			'loot' => $loot,
 // 			'power' => $power,
 // 			'nounPower' => $nounPower,
 // 			'adverbPower' => $adverbPower,
@@ -84,8 +88,24 @@ final class TGC_Attack
 		$d->sendCommand('TGC_SLAP', $payload);
 		
 		# Give XP
-		$a->giveXP($skill, $power, $this->mid);
-		$d->giveXP($skill, $power/10, $this->mid);
+		$xp = round(Common::clamp($power, 1));
+		$a->giveXP($skill, $xp, $this->mid);
+		$d->giveXP($skill, $xp/10, $this->mid);
+	}
+	
+	private function getLoot()
+	{
+		$loot = array(
+			'gold' => TGC_Global::rand(10, 100),
+			'food' => TGC_Global::rand(0, 1),
+			'water' => TGC_Global::rand(0, 1),
+		);
+		foreach ($this->defender->getLoot() as $key => $value)
+		{
+			$loot[$key] = $loot[$key] ? $loot[$key] : 0;
+			$loot[$key] += $value;
+		}
+		return $loot;
 	}
 	
 	private function randomItem($slaps)

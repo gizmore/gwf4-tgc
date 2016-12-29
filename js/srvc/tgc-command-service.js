@@ -91,23 +91,21 @@ TGC.service('TGCCommandSrvc', function($rootScope, $injector, ErrorSrvc, Websock
 	CommandSrvc.TGC_POS = function(payload) {
 		console.log('CommandSrvc.TGC_POS()', payload);
 		var data = JSON.parse(payload);
-		var name = data.player.user_name;
+		var name = data.user_name;
 		var player = null;
-		
 		var MapUtil = CommandSrvc.getMapUtil();
 		var PlayerSrvc = CommandSrvc.getPlayerSrvc();
-
 		if (PlayerSrvc.hasPlayer(name)) {
 			player = PlayerSrvc.getPlayer(name);
 		}
 		else {
-			player = new TGC_Player(data.player, null, null);
+			player = new TGC_Player(data, null, null);
 			PlayerSrvc.addPlayer(player);
 			MapUtil.addPlayer(player);
 		}
-		player.moveTo(data.player.lat, data.player.lng)
-		MapUtil.movePlayer(player);
 		PlayerSrvc.updateCacheForPlayer(player, data);
+		player.moveTo(data.lat, data.lng)
+		MapUtil.movePlayer(player);
 		return player;
 	};
 	

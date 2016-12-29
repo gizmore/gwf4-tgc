@@ -113,9 +113,7 @@ final class TGC_Commands extends GWS_Commands
 			$player = self::player($user);
 			$payload = json_decode($payload);
 			$player->moveTo($payload->lat, $payload->lng);
-			$payload = json_encode(array(
-				'player' => $player->userPositionDTO(),
-			));
+			$payload = json_encode($player->userPositionDTO());
 			$player->sendCommand('TGC_POS', $payload);
 			$player->forNearMe(function($p, $payload) {
 				$p->sendCommand('TGC_POS', $payload);
