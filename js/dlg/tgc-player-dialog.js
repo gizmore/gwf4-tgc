@@ -1,6 +1,6 @@
 'use strict';
 var TGC = angular.module('gwf4');
-TGC.service('PlayerDlg', function($q, $mdDialog, ErrorSrvc, TGCCommandSrvc, PlayerSrvc, SpellDlg, MapUtil) {
+TGC.service('PlayerDlg', function($q, $mdDialog, ErrorSrvc, TGCCommandSrvc, PlayerSrvc, SpellDlg, MapUtil, EffectSrvc) {
 	
 	var PlayerDlg = this;
 	
@@ -39,7 +39,7 @@ TGC.service('PlayerDlg', function($q, $mdDialog, ErrorSrvc, TGCCommandSrvc, Play
 				if (!result.startsWith('ERR')) {
 					$scope.closeDialog();
 					var data = JSON.parse(result);
-					ErrorSrvc.showMessage(TGCCommandSrvc.slapMessage(data), TGCCommandSrvc.slapTitle(data));
+					EffectSrvc.onAttack(data);
 				}
 			};
 		}

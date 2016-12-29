@@ -101,6 +101,7 @@ angular.module('gwf4')
 		var marker = player.marker ? player.marker : MapUtil.addMarkerForPlayer(player);
 		MapUtil.styleMarkerForPlayer(player);
 		ShapeUtil.initShape(player, MapUtil.map());
+		ShapeUtil.addPlayer(player, MapUtil.map());
 	};
 	
 	MapUtil.styleMarkerForPlayer = function(player) {

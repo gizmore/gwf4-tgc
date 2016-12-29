@@ -3,8 +3,9 @@ final class TGC_Logic
 {
 	public static function levelForXP($xp)
 	{
-		$level = $xp < 5 ? 0 : ceil(sqrt(sqrt($xp / 1000)));
-		return Common::clamp($level, 0, count(TGC_Const::$LEVELS));
+		$maxLevel = count(TGC_Const::$LEVELS);
+		$level = round(log($xp)-5);
+		return Common::clamp($level, 0, $maxLevel);
 	}
 	
 	public static function arePlayersNearEachOther(TGC_Player $a, TGC_Player $b)

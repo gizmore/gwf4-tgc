@@ -8,10 +8,30 @@ angular.module('gwf4')
 		if (!player.shape) {
 			ShapeUtil.initShape(player, map);
 		}
+		if (player.isOwn()) {
+			ShapeUtil.initHPBar(player, map);
+		}
 	};
 	
+	ShapeUtil.initHPBar = function(player, map) {
+		console.log('ShapeUtil.initHPBar()', player.displayName());
+		if (player.hpInfo) {
+			player.hpInfo.setMap(null);
+			player.hpInfo = undefined;
+		}
+		player.hpInfo = new google.maps.InfoWindow({
+			content: ShapeUtil.hpBarHTML(player),
+			position: player.latLng(),
+		});
+		player.hpInfo.open(map);
+	};
+	
+	ShapeUtil.hpBarHTML = function(player) {
+		return sprintf('%s/%sHP – %s/%sMP', player.hp(), player.maxHP(), player.mp(), player.maxMP());
+	};
+
 	ShapeUtil.initShape = function(player, map) {
-		console.log('ShapeUtil.initShape()', player.user.displayName());
+		console.log('ShapeUtil.initShape()', player.displayName());
 		
 		if ((!player.hasStats()) || (!player.hasPosition())) {
 			return;

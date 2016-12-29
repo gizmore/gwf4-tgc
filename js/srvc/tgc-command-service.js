@@ -7,6 +7,7 @@ TGC.service('TGCCommandSrvc', function($rootScope, $injector, ErrorSrvc, Websock
 	//////////////////////
 	CommandSrvc.getMapUtil = function() { CommandSrvc.MAPUTIL = CommandSrvc.MAPUTIL || $injector.get('MapUtil'); return CommandSrvc.MAPUTIL; };
 	CommandSrvc.getChatSrvc = function() { CommandSrvc.CHATSERVICE = CommandSrvc.CHATSERVICE || $injector.get('ChatSrvc'); return CommandSrvc.CHATSERVICE; };
+	CommandSrvc.getEffectSrvc = function() { CommandSrvc.EFFECTSERVICE = CommandSrvc.EFFECTSERVICE || $injector.get('EffectSrvc'); return CommandSrvc.EFFECTSERVICE; };
 	CommandSrvc.getPlayerSrvc = function() { CommandSrvc.PLAYERSERVICE = CommandSrvc.PLAYERSERVICE || $injector.get('PlayerSrvc'); return CommandSrvc.PLAYERSERVICE; };
 	CommandSrvc.getLevelupDlg = function() { CommandSrvc.LEVELUPDIALOG = CommandSrvc.LEVELUPDIALOG || $injector.get('LevelupDlg'); return CommandSrvc.LEVELUPDIALOG; };
 	
@@ -61,21 +62,6 @@ TGC.service('TGCCommandSrvc', function($rootScope, $injector, ErrorSrvc, Websock
 		return WebsocketSrvc.sendJSONCommand('tgcCast', { target: player.name(), runes: runes });
 	};
 	
-	///
-	CommandSrvc.slapTitle = function(data) {
-		switch (data.type) {
-		case 'fighter': return "Fight";
-		case 'ninja': return "Attack";
-		case 'priest': return "Potion";
-		case 'wizard': return "Spell";
-		}
-	};
-	CommandSrvc.slapMessage = function(data) {
-		var damage = data.critical ? sprintf('<critical>%s damage</critical>', data.damage) : data.damage;
-		damage = data.killed ? sprintf('<b>Killed</b> with %s!', damage) : sprintf('This caused %s.', damage);
-		return sprintf('%s %s %s %s with %s %s.<br/>%s', data.attacker, data.adverb, data.verb, data.defender, data.adjective, data.noun, damage);
-	}
-
 	/////////////////////
 	// Server commands //
 	/////////////////////
@@ -98,7 +84,8 @@ TGC.service('TGCCommandSrvc', function($rootScope, $injector, ErrorSrvc, Websock
 	CommandSrvc.TGC_SLAP = function(payload) {
 		console.log('CommandSrvc.TGC_SLAP()', payload);
 		var data = JSON.parse(payload);
-		ErrorSrvc.showMessage(CommandSrvc.slapMessage(data), CommandSrvc.slapTitle(data));
+		CommandSrvc.getEffectSrvc().onGettingAttacked(data);
+		CommandSrvc.getPlayerSrvc().OWN.giveHP(-data.damage);
 	};
 	
 	CommandSrvc.TGC_POS = function(payload) {
@@ -126,9 +113,10 @@ TGC.service('TGCCommandSrvc', function($rootScope, $injector, ErrorSrvc, Websock
 	
 	CommandSrvc.TGC_LVLUP = function(payload) {
 		console.log('CommandSrvc.TGC_LVLUP()', payload);
+		var PlayerSrvc = CommandSrvc.getPlayerSrvc();
 		var LevelupDlg = CommandSrvc.getLevelupDlg();
 		var data = JSON.parse(payload);
-		return LevelupDlg.show(data);
+		return LevelupDlg.open(PlayerSrvc.OWN, data);
 	};
 	
 	CommandSrvc.TGC_CHAT = function(payload) {

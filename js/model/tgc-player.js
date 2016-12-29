@@ -25,6 +25,9 @@ function TGC_Player(json) {
 	this.maxHP = function() { return this.JSON.mhp; };
 	this.mp = function() { return this.JSON.mp; };
 	this.maxMP = function() { return this.JSON.mmp; };
+	
+	this.giveHP = function(hp) { this.JSON.hp = clamp(this.JSON.hp + hp, 0, this.maxHP()); };
+	this.giveMP = function(mp) { this.JSON.mp = clamp(this.JSON.mp + mp, 0, this.maxMP()); };
 
 	this.mode = function(mode) { if (mode) this.JSON.m = mode; return this.JSON.m; };
 	this.color = function(color) { if (color) this.JSON.c = color; return this.JSON.c; };
