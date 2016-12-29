@@ -1,0 +1,17 @@
+<md-dialog aria-label="Player dialog">
+	<md-dialog-content layout-padding>
+	
+		<p>Some spells can be casted on a location to maximize area damage.</p> 
+		
+		<md-list>
+			<md-list-item>
+				<div class="tgc-stat-number"><span>Wizard</span>: <b>{{own_player.wizardLevelName()}}</b></div>
+				<md-button ng-click="cast()" class="md-primary">Cast</md-button>
+			</md-list-item>
+		</md-list>
+
+	</md-dialog-content>
+	<md-dialog-actions>
+		<md-button ng-click="closeDialog()" class="md-primary" aria-label="Close dialog">Close Dialog</md-button>
+	</md-dialog-actions>
+</md-dialog>

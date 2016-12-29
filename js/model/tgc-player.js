@@ -15,6 +15,7 @@ function TGC_Player(json) {
 	this.latLng = function() { return this.position; };
 	this.hasPosition = function() { return this.position !== null; };
 	this.hasStats = function() { return this.JSON.fl !== undefined; };
+	this.radius = function() { return this.JSON.r || 10; };
 
 	this.id = function(id) { if (id) this.JSON.p_uid = id; return this.JSON.p_uid; };
 	this.isOwn = function() { return this.user.name() === GWF_USER.name(); };

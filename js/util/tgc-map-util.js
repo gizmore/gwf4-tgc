@@ -1,6 +1,6 @@
 'use strict';
 angular.module('gwf4')
-.service('TGCMapUtil', function(MapUtil, ColorUtil, PlayerDlg, PlayerSrvc, ShapeUtil) {
+.service('TGCMapUtil', function(MapUtil, ColorUtil, AreaDlg, PlayerDlg, PlayerSrvc, ShapeUtil) {
 	
 	MapUtil.MARKERS = {};
 
@@ -13,8 +13,14 @@ angular.module('gwf4')
 		if (!map) {
 			return undefined;
 		}
+		MapUtil.MAP.addListener('click', MapUtil.mapClicked);
 		MapUtil.MAP.addListener('center_changed', MapUtil.panBack);
 		return MapUtil.MAP;
+	};
+	
+	MapUtil.mapClicked = function(event) {
+		console.log('MapUtil.mapClicked()', event);
+		AreaDlg.open(event.latLng);
 	};
 	
 	MapUtil.panBack = function() {

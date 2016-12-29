@@ -1,15 +1,17 @@
 <md-dialog aria-label="Spell dialog">
 	<md-dialog-content layout-padding>
 	
+		<p>You need at least two runes to cast a spell. The first rune is power.</p>
+	
 		<div class="spell-row spell-row-0" ng-if="data.runes.length >= 0">
 			<ol>
-				<li ng-if="data.player.wizardLevel() >= 0"><md-button ng-class="{'selected-rune': data.selectedIDs[0] == 0}" ng-click="spell($event, 0, 0)">{{data.runes[0][0]}}</md-button></li>
-				<li ng-if="data.player.wizardLevel() >= 1"><md-button ng-class="{'selected-rune': data.selectedIDs[0] == 1}" ng-click="spell($event, 0, 1)">{{data.runes[0][1]}}</md-button></li>
-				<li ng-if="data.player.wizardLevel() >= 1"><md-button ng-class="{'selected-rune': data.selectedIDs[0] == 2}" ng-click="spell($event, 0, 2)">{{data.runes[0][2]}}</md-button></li>
-				<li ng-if="data.player.wizardLevel() >= 2"><md-button ng-class="{'selected-rune': data.selectedIDs[0] == 3}" ng-click="spell($event, 0, 3)">{{data.runes[0][3]}}</md-button></li>
-				<li ng-if="data.player.wizardLevel() >= 2"><md-button ng-class="{'selected-rune': data.selectedIDs[0] == 4}" ng-click="spell($event, 0, 4)">{{data.runes[0][4]}}</md-button></li>
-				<li ng-if="data.player.wizardLevel() >= 2"><md-button ng-class="{'selected-rune': data.selectedIDs[0] == 5}" ng-click="spell($event, 0, 5)">{{data.runes[0][5]}}</md-button></li>
-				<li ng-if="data.player.wizardLevel() >= 3"><md-button ng-class="{'selected-rune': data.selectedIDs[0] == 6}" ng-click="spell($event, 0, 6)">{{data.runes[0][6]}}</md-button></li>
+				<li ng-if="magicLevel() >= 0"><md-button ng-class="{'selected-rune': data.selectedIDs[0] == 0}" ng-click="spell($event, 0, 0)">{{data.runes[0][0]}}</md-button></li>
+				<li ng-if="magicLevel() >= 0"><md-button ng-class="{'selected-rune': data.selectedIDs[0] == 1}" ng-click="spell($event, 0, 1)">{{data.runes[0][1]}}</md-button></li>
+				<li ng-if="magicLevel() >= 1"><md-button ng-class="{'selected-rune': data.selectedIDs[0] == 2}" ng-click="spell($event, 0, 2)">{{data.runes[0][2]}}</md-button></li>
+				<li ng-if="magicLevel() >= 1"><md-button ng-class="{'selected-rune': data.selectedIDs[0] == 3}" ng-click="spell($event, 0, 3)">{{data.runes[0][3]}}</md-button></li>
+				<li ng-if="magicLevel() >= 2"><md-button ng-class="{'selected-rune': data.selectedIDs[0] == 4}" ng-click="spell($event, 0, 4)">{{data.runes[0][4]}}</md-button></li>
+				<li ng-if="magicLevel() >= 3"><md-button ng-class="{'selected-rune': data.selectedIDs[0] == 5}" ng-click="spell($event, 0, 5)">{{data.runes[0][5]}}</md-button></li>
+				<li ng-if="magicLevel() >= 5"><md-button ng-class="{'selected-rune': data.selectedIDs[0] == 6}" ng-click="spell($event, 0, 6)">{{data.runes[0][6]}}</md-button></li>
 			</ol>
 		</div>
 	
@@ -49,12 +51,12 @@
 			</ol>
 		</div>
 		
-		<div>{{data.selected.join(' ')}}</div>
+		<div>Active Spell: {{data.selected.join(' ')}}</div>
 	
 	</md-dialog-content>
 	<md-dialog-actions>
-		<md-button ng-if="data.type=='brew'" ng-click="brew()" class="md-primary" aria-label="Brew">Brew</md-button>
-		<md-button ng-if="data.type=='cast'" ng-click="cast()" class="md-primary" aria-label="Cast">Cast</md-button>
+		<md-button ng-if="data.type=='brew'" ng-click="brew()" class="md-primary" aria-label="Brew" ng-disabled="data.selected.length < 2">Brew</md-button>
+		<md-button ng-if="data.type=='cast'" ng-click="cast()" class="md-primary" aria-label="Cast" ng-disabled="data.selected.length < 2">Cast</md-button>
 		<md-button ng-click="closeDialog()" class="md-primary" aria-label="Close dialog">Close Dialog</md-button>
 	</md-dialog-actions>
 </md-dialog>

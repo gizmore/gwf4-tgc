@@ -62,6 +62,11 @@ TGC.service('TGCCommandSrvc', function($rootScope, $injector, ErrorSrvc, Websock
 		return WebsocketSrvc.sendJSONCommand('tgcCast', { target: player.name(), runes: runes });
 	};
 	
+	CommandSrvc.tgcCastLatLng = function(latLng, runes) {
+		console.log('CommandSrvc.tgcCastLatLng()', latLng, runes);
+		return WebsocketSrvc.sendJSONCommand('tgcCastLL', { lat: latLng.lat(), lng: latLng.lng(), runes: runes });
+	};
+	
 	/////////////////////
 	// Server commands //
 	/////////////////////
@@ -114,6 +119,7 @@ TGC.service('TGCCommandSrvc', function($rootScope, $injector, ErrorSrvc, Websock
 		var PlayerSrvc = CommandSrvc.getPlayerSrvc();
 		var LevelupDlg = CommandSrvc.getLevelupDlg();
 		var data = JSON.parse(payload);
+		PlayerSrvc.updateCacheForPlayer(player, data);
 		return LevelupDlg.open(PlayerSrvc.OWN, data);
 	};
 	

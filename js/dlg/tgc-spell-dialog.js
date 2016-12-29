@@ -4,16 +4,19 @@ TGC.service('SpellDlg', function($q, $mdDialog, ErrorSrvc, TGCCommandSrvc, Playe
 	
 	var SpellDlg = this;
 	
-	SpellDlg.open = function(player, type) {
+	SpellDlg.open = function(target, type) {
+		console.log('SpellDlg.open()', target, type);
 		return $q(function(resolve, reject){
-			SpellDlg.show(player, type, resolve, reject);
+			SpellDlg.show(target, type, resolve, reject);
 		});
 	};
 
-	SpellDlg.show = function(player, type, resolve, reject) {
-		function DialogController($scope, $mdDialog, player, type, resolve) {
+	SpellDlg.show = function(target, type, resolve, reject) {
+		console.log('SpellDlg.show()', PlayerSrvc.OWN);
+		function DialogController($scope, $mdDialog, target, type, resolve) {
 			$scope.data = {
-				player: player,
+				player: PlayerSrvc.OWN,
+				target: target,
 				type: type,
 				runes: window.TGC_CONFIG.runes,
 				selected: [],
@@ -23,11 +26,19 @@ TGC.service('SpellDlg', function($q, $mdDialog, ErrorSrvc, TGCCommandSrvc, Playe
 				$mdDialog.hide();
 //				resolve();
 			};
+			$scope.magicLevel = function() {
+				return PlayerSrvc.OWN.priestLevel() + PlayerSrvc.OWN.wizardLevel(); 
+			};
 			$scope.brew = function() {
-				TGCCommandSrvc.tgcBrew(player, $scope.spelltext()).then($scope.closeDialog);
+				TGCCommandSrvc.tgcBrew(target, $scope.spelltext()).then($scope.closeDialog);
 			};
 			$scope.cast = function() {
-				TGCCommandSrvc.tgcCast(player, $scope.spelltext()).then($scope.closeDialog);
+				if (target.fighterLevelName === undefined) {
+					TGCCommandSrvc.tgcCastLatLng(target, $scope.spelltext()).then($scope.closeDialog);
+				}
+				else {
+					TGCCommandSrvc.tgcCast(target, $scope.spelltext()).then($scope.closeDialog);
+				}
 			};
 			$scope.spelltext = function() {
 				return $scope.data.selected.join(',');
@@ -39,12 +50,15 @@ TGC.service('SpellDlg', function($q, $mdDialog, ErrorSrvc, TGCCommandSrvc, Playe
 				$scope.data.selectedIDs = $scope.data.selectedIDs.slice(0, row);
 				$scope.data.selectedIDs.push(col);
 			};
+			$scope.numRunes = function() {
+				return $scope.data.selected.length;
+			};
 		}
 		var parentEl = angular.element(document.body);
 		$mdDialog.show({
 			templateUrl: GWF_WEB_ROOT+'module/Tamagochi/js/tpl/spell_dlg.html',
 			locals: {
-				player: player,
+				target: target,
 				type: type,
 				resolve: resolve,
 			},

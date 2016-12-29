@@ -29,7 +29,7 @@ angular.module('gwf4')
 
 	PlayerSrvc.hasPlayer = function(name) {
 		console.log("PlayerSrvc.hasPlayer()", name);
-		return PlayerSrvc.CACHE[name] ? true : false;
+		return !!PlayerSrvc.CACHE[name];
 	};
 	
 	PlayerSrvc.addPlayer = function(player) {
@@ -55,6 +55,7 @@ angular.module('gwf4')
 				player.hash(newData.hash);
 			}
 		}
+		return player;
 	};
 	
 

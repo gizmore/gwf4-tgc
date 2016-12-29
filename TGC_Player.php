@@ -117,6 +117,10 @@ class TGC_Player extends GDO
 	public function mp() { return $this->base['mp']; }
 	public function maxMP() { return $this->power('max_mp'); }
 	
+	public function food() { return $this->food; }
+	public function water() { return $this->water; }
+	public function gold() { return $this->getVar('p_gold'); }
+	
 	public function sumSkills() { return $this->fighter() + $this->ninja() + $this->priest() + $this->wizard(); }
 	public function sumAttributes() { return $this->strength() + $this->dexterity() + $this->wisdom() + $this->intelligence(); }
 
@@ -231,6 +235,10 @@ class TGC_Player extends GDO
 			'nl' => (int)$this->getVar('p_ninja'),
 			'pl' => (int)$this->getVar('p_priest'),
 			'wl' => (int)$this->getVar('p_wizard'),
+			'hp' => $this->hp(),
+			'mp' => $this->mp(),
+			'mhp' => $this->maxHP(),
+			'mmp' => $this->maxMP(),
 		);
 	}
 	
@@ -238,10 +246,6 @@ class TGC_Player extends GDO
 	{
 		return array(
 // 			'p_uid' => $this->getVar('p_uid'),
-			'hp' => $this->hp(),
-			'mp' => $this->mp(),
-			'mhp' => $this->maxHP(),
-			'mmp' => $this->maxMP(),
 			'as' => (int)$this->getVar('p_strength'),
 			'ad' => (int)$this->getVar('p_dexterity'),
 			'aw' => (int)$this->getVar('p_wisdom'),
@@ -258,7 +262,10 @@ class TGC_Player extends GDO
 			'nx' => (int)$this->getVar('p_ninja_xp'),
 			'px' => (int)$this->getVar('p_priest_xp'),
 			'wx' => (int)$this->getVar('p_wizard_xp'),
-			'r' => TGC_Logic::calcRadius($this),	
+			'r' => TGC_Logic::calcRadius($this),
+			'g' => $this->gold(),
+			'w' => $this->water,
+			'f' => $this->food,
 		);
 	}
 	
