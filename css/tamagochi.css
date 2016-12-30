@@ -13,6 +13,28 @@ HTML, BODY, #TGCMAP {
 	position: relative;
 }
 
+/** Action Bar **/
+tgc-game-action-bar {
+	text-align: center;
+}
+tgc-game-action-bar button.md-button {
+	background: #ccc;
+	color: black;
+}
+tgc-game-action-bar-shadow {
+	opacity: 0.6;
+	background: #000;
+	border-top: 3px solid #444;
+}
+tgc-game-action-bar, tgc-game-action-bar-shadow {
+	display: block;
+	position: absolute;
+	bottom: 0;
+	left: 0;
+	width: 100%;
+	height: 2.5em;
+}
+
 /** **/
 #tgc-chat-input input {
 	padding-left: 7.5em;
@@ -75,21 +97,16 @@ md-dialog-content > p {
 
 /** Spell Dialog **/
 .spell-row {
-	
 }
-
 .spell-row ol {
 	list-style: none;
 }
-
 .spell-row li {
 	display: inline-block;
 }
-
 .selected-rune  {
-	background: red;
+	background: red!important;
 }
-
 .spell-row li button {
 	background: gray;
 }

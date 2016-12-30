@@ -29,6 +29,22 @@ abstract class TGC_AIScript
 	}
 	private function __construct($bot) { $this->bot = $bot; $this->difficulty = $this->rand(0.0, 0.05); }
 	
+	##############
+	### Create ###
+	##############
+	public function random_gold() { return TGC_Global::rand(5, 93); }
+	public function random_gender() { return TGC_Global::randItem(array('male', 'female')); }
+	public function random_race() { return TGC_Global::randItem(TGC_Race::playerRaces()); }
+	public function random_mode() { return TGC_Global::randItem(TGC_Const::$MODES); }
+	public function random_color() { return TGC_Global::randItem(TGC_Const::$COLORS); }
+	public function random_element() { return TGC_Global::randItem(TGC_Const::$ELEMENTS); }
+	public function random_fighter() { return TGC_Global::averageBase('fighter'); }
+	public function random_ninja() { return TGC_Global::averageBase('ninja'); }
+	public function random_priest() { return TGC_Global::averageBase('priest'); }
+	public function random_wizard() { return TGC_Global::averageBase('wizard'); }
+	public function random_hp() { return 0; }
+	public function random_mp() { return 0; }
+	
 	################
 	### Abstract ###
 	################

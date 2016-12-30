@@ -1,6 +1,6 @@
 'use strict';
 angular.module('gwf4')
-.controller('TGCCtrl', function($scope, $q, ConstSrvc, PlayerSrvc, AuthSrvc, ErrorSrvc, PositionSrvc, WebsocketSrvc, TGCCommandSrvc) {
+.controller('TGCCtrl', function($scope, $q, ConstSrvc, PlayerSrvc, AuthSrvc, ErrorSrvc, PositionSrvc, WebsocketSrvc, TGCCommandSrvc, PlayerDlg, SpellDlg) {
 	
 	$scope.data = {
 		version: '',
@@ -69,11 +69,27 @@ angular.module('gwf4')
 	$scope.loadMap = function(ehloData) {
 		console.log('TGCCtrl.loadMap()', ehloData);
 		$scope.data.timestamp = ehloData.timestamp;
-		ErrorSrvc.showMessage(ehloData.welcome_message, 'TGC '+ehloData.server_version);
+//		ErrorSrvc.showMessage(ehloData.welcome_message, 'TGC '+ehloData.server_version);
 		PlayerSrvc.OWN = PlayerSrvc.updatePlayerCache(ehloData.player);
 		return $scope.refreshSidebar().then(function() {
 			$scope.requestPage(GWF_WEB_ROOT+'tgc-game?ajax=1');
 		});
 	};
-
+	
+	////////////////
+	// Button bar //
+	////////////////
+	$scope.doPause = function() {
+		TGCCommandSrvc.tgcPause();
+	};
+	$scope.doSelf = function() {
+		PlayerDlg.open(PlayerSrvc.OWN);
+	};
+	$scope.doBrew = function() {
+		SpellDlg.open(PlayerSrvc.OWN, 'brew');
+	};
+	$scope.doCast = function() {
+		SpellDlg.open(PlayerSrvc.OWN, 'cast');
+	};
+	
 });

@@ -3,8 +3,8 @@ final class TGC_Race
 {
 	public static function races() { return array_keys(self::$RACE); }
 	public static function enumRaces() { return array_merge(array('none'), self::races()); }
-	public static function npcRaces() { return array_slice(self::races(), array_search('gremlin', self::allRaces())+1); }
-	public static function playerRaces() { return array_slice(self::races(), 0, array_search('gremlin', self::allRaces())+1); }
+	public static function npcRaces() { return array_slice(self::races(), array_search('gremlin', self::races())+1); }
+	public static function playerRaces() { return array_slice(self::races(), 0, array_search('gremlin', self::races())+1); }
 	public static function randomHumanRace() { return TGC_Global::randomItem(self::playerRaces()); }
 	public static function validPlayerRace($race) { return in_array($race, self::playerRaces(), true); }
 	public static function getBonus($race) { return self::$RACE[$race]; }

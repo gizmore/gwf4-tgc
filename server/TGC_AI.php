@@ -94,7 +94,7 @@ final class TGC_AI
 	private function spawnBots($tick)
 	{
 		$chances = array();
-		$maxTotal = $this->tgc()->cfgMaxBots();
+		$maxTotal = min(ceil(count(TGC_Global::$HUMANS) * 1.5), $this->tgc()->cfgMaxBots());
 		$haveTotal = count($this->bots());
 		if ($haveTotal < $maxTotal)
 		{
@@ -143,10 +143,11 @@ final class TGC_AI
 		}
 		
 		# Bpt 
-		if ($bot = TGC_Bot::createBot($user, $type))
+		if ($bot = TGC_PlayerFactory::bot($user, $type))
 		{
 			$bot->setUser($user);
 		}
+
 		return $bot;
 	}
 	

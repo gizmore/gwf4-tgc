@@ -1,16 +1,17 @@
 <?php
-require_once 'util/TGC_Const.php';
-require_once 'util/TGC_Logic.php';
-require_once 'util/TGC_Position.php';
-require_once 'util/TGC_Race.php';
-require_once 'util/TGC_Kill.php';
-require_once 'util/TGC_Levelup.php';
 require_once 'TGC_Player.php';
 require_once 'TGC_Bot.php';
 require_once 'TGC_Attack.php';
 require_once 'magic/TGC_Spell.php';
 require_once 'magic/TGC_Potion.php';
 require_once 'server/TGC_AI.php';
+require_once 'util/TGC_Const.php';
+require_once 'util/TGC_Logic.php';
+require_once 'util/TGC_Position.php';
+require_once 'util/TGC_Race.php';
+require_once 'util/TGC_Kill.php';
+require_once 'util/TGC_Levelup.php';
+require_once 'util/TGC_PlayerFactory.php';
 
 /**
  * @author gizmore
@@ -41,8 +42,10 @@ final class Module_Tamagochi extends GWF_Module
 	public function cfgRunecost() { $r = $this->initRunes(); return $r['runecost']; }
 	public function cfgWelcomeMessage() { return $this->getModuleVar('tgc_welcome_msg', 'TGCv1'); }
 	public function cfgBots() { return $this->getModuleVarBool('tgc_bots', '1'); }
-	public function cfgMaxBots() { return $this->getModuleVarInt('tgc_max_bots', '5'); }
-	public function cfgMaxAssassinBots() { return $this->getModuleVarInt('tgc_max_assassin_bots', '3'); }
+	public function cfgMaxBots() { return $this->getModuleVarInt('tgc_max_bots', '6'); }
+	
+	public function cfgMaxFoodclanBots() { return $this->getModuleVarInt('tgc_max_foodclan_bots', '1'); }
+	public function cfgMaxAssassinBots() { return $this->getModuleVarInt('tgc_max_assassin_bots', '1'); }
 	public function cfgMaxNimdaBots() { return $this->getModuleVarInt('tgc_max_nimda_bots', '0'); }
 	public function cfgMaxRobberBots() { return $this->getModuleVarInt('tgc_max_loser_bots', '0'); }
 	
@@ -120,6 +123,7 @@ final class Module_Tamagochi extends GWF_Module
 		$this->addJavascript('model/tgc-player.js');
 		# Ctrl
 		$this->addJavascript('ctrl/tgc-controller.js');
+		$this->addJavascript('ctrl/tgc-actionbar-controller.js');
 		$this->addJavascript('ctrl/tgc-map-controller.js');
 		# Srvc
 		$this->addJavascript('srvc/tgc-chat-service.js');

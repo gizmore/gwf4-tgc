@@ -7,7 +7,9 @@
 		</div>
 		
 		<div>
-			<div><tgc-item ng-if="player.gold()"><name>Gold</name><value>{{player.gold()}}</value></tgc-item></div>
+			<div>
+				<tgc-item ng-if="player.gold()"><name>Gold</name><value>{{player.gold()}}</value></tgc-item>
+			</div>
 			<div>
 				<tgc-item ng-if="player.food()"><name>Food</name><value>{{player.food()}}</value></tgc-item>
 				<tgc-item ng-if="player.water()"><name>Water</name><value>{{player.water()}}</value></tgc-item>
@@ -15,8 +17,8 @@
 		</div>
 		
 		<div>
-			<tgc-stat-bar class="hp-bar" ng-if="player.hp()" ng-value="player.hp()" ng-max="player.maxHP()" label="{{player.hp()}} / {{player.maxHP()}} HP"></tgc-stat-bar>
-			<tgc-stat-bar class="mp-bar" ng-if="player.mp()" ng-value="player.mp()" ng-max="player.maxMP()" label="{{player.mp()}} / {{player.maxMP()}} MP"></tgc-stat-bar>
+			<tgc-stat-bar class="hp-bar" ng-value="player.hp()" ng-max="player.maxHP()" label="{{player.hp()}} / {{player.maxHP()}} HP"></tgc-stat-bar>
+			<tgc-stat-bar class="mp-bar" ng-value="player.mp()" ng-max="player.maxMP()" label="{{player.mp()}} / {{player.maxMP()}} MP"></tgc-stat-bar>
 		</div> 
 
 		<div>

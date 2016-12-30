@@ -6,7 +6,7 @@ abstract class TGC_Potion extends TGC_Spell
 	public function canTargetSelf() { return true; }
 	public function canTargetOther() { return true; }
 	public function waterCost() { return $this->level; }
-	public function playerLevel() { return $this->player->priest() + ceil($this->player->wizard()/4); }
+	public function playerLevel() { return $this->player->priest() + ceil($this->player->wizard()/4) + 1; }
 	
 	public function brew()
 	{

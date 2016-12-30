@@ -27,6 +27,11 @@ TGC.service('TGCCommandSrvc', function($rootScope, $injector, ErrorSrvc, Websock
 		return WebsocketSrvc.sendJSONCommand('tgcHelo', payload, false);
 	};
 
+	CommandSrvc.tgcPause = function() {
+		console.log('CommandSrvc.tgcPause()');
+		return WebsocketSrvc.sendCommand('tgcPause');
+	};
+
 	CommandSrvc.tgcPlayer = function(player) {
 		console.log('CommandSrvc.tgcPlayer()', player);
 		return WebsocketSrvc.sendCommand('tgcPlayer', player.name(), false);

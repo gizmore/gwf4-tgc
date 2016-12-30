@@ -4,7 +4,7 @@ TGC.service('PlayerDlg', function($q, $mdDialog, ErrorSrvc, TGCCommandSrvc, Play
 	
 	var PlayerDlg = this;
 	
-	PlayerDlg.open = function($event, player) {
+	PlayerDlg.open = function(player) {
 		console.log('PlayerDlg.open()', player);
 		return $q(function(resolve, reject){
 			PlayerSrvc.withStats(player).then(function(player) {

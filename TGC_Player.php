@@ -93,9 +93,10 @@ class TGC_Player extends GDO
 	### Getters ###
 	###############
 	public function getName() { return $this->getVar('user_name'); }
+	public function isMagicRace() { return TGC_Race::isMagicRace($this->getRace()); }
 	public function getRace() { $race = $this->getVar('p_race'); return $race === 'none' ? 'human' : $race; }
 	public function getGender() { return $this->getVar('user_gender'); }
-	public function isMagicRace() { return TGC_Race::isMagicRace($this->getRace()); }
+	public function getColor() { return $this->getVar('p_active_color'); }
 	
 	public function lat() { return $this->lat; }
 	public function lng() { return $this->lng; }
@@ -138,14 +139,16 @@ class TGC_Player extends GDO
 	#############
 	### Score ###
 	#############
-	public function base($field) { return isset($this->base[$field]) ? $this->base[$field] + 1 : 1; }
+	public function base($field) { return isset($this->base[$field]) ? $this->base[$field] : 0; }
 	public function power($field) { return $this->adjusted[$field]; }
-	public function average($field) { return TGC_Global::average($field); }
+	public function averageBase($field) { return TGC_Global::averageBase($field); }
+	public function averagePower($field) { return TGC_Global::averagePower($field); }
 	
 	public function compareTo(TGC_Player $player, $field) { return $this->compare($this->power($field), $player->power($field)); }
-	public function compareAvg($field) { return $this->compare($this->power($field), $this->average($field)); }
-	public function compare($p1, $p2) { return Common::clamp( ($p1 - $p2) / ($p1 + $p2), 0.01, 1.00); }
-	public function adjust($field, $by) { $this->adjusted[$field] += $by; }
+	public function compareToAvg($field) { return $this->compare($this->power($field), $this->averagePower($field)); }
+	public function compare($p1, $p2) { $sum = $p1+$p2; return $sum < 1 ? 1.0 : ($p1+$p1+$p2) / ($p1+$p2+$p2); }
+	
+// 	public function adjust($field, $by) { $this->adjusted[$field] += $by; }
 	
 	##############
 	### Fields ###
@@ -162,7 +165,7 @@ class TGC_Player extends GDO
 	public function wizard() { return $this->power('wizard'); }
 	
 	public function health() { return Common::clamp($this->hp() /  min(30, $this->maxHP()), 0.0, 1.0); }
-	public function endurance() { return Common::clamp($this->endurance / 40.0, 0.0, 1.0); }
+	public function endurance() { return Common::clamp($this->endurance / 60.0, 0.25, 1.0); }
 	public function sober() { return 1.0; }
 	public function brave() { return 1.0; }
 	public function awake() { return Common::clamp($this->tired - 50 / 100.0, 0.0, 1.0); }
@@ -218,6 +221,11 @@ class TGC_Player extends GDO
 			'lat' => $this->lat,
 			'lng' => $this->lng,
 		);
+	}
+	
+	public function pauseDTO()
+	{
+		return array();
 	}
 	
 	public function statsDTO()
@@ -299,55 +307,7 @@ class TGC_Player extends GDO
 		}
 		return $player;
 	}
-	
-	public static function createBot(GWF_User $user, $type)
-	{
-		return self::createPlayer($user, 'TGC_Bot', $type);
-	}
-	
-	public static function createPlayer(GWF_User $user, $classname='TGC_Player', $type=null, $race='none')
-	{
-		$player = new $classname(array(
-			'p_uid' => $user->getID(),
-			'p_type' => $type,
-			'p_race' => $race,
-			'p_gold' => '50',
-			'p_max_hp' => '4',
-			'p_max_mp' => '0',
-			'p_strength' => '0',
-			'p_dexterity' => '0',
-			'p_wisdom' => '0',
-			'p_intelligence' => '0',
-			'p_fighter' => '0',
-			'p_ninja' => '0',
-			'p_priest' => '0',
-			'p_wizard' => '0',
-			'p_fighter_xp' => '0',
-			'p_ninja_xp' => '0',
-			'p_priest_xp' => '0',
-			'p_wizard_xp' => '0',
-			'p_active_color' => TGC_Const::NONE,
-			'p_active_element' => TGC_Const::NONE,
-			'p_active_skill' => TGC_Const::NONE,
-			'p_active_mode' => TGC_Const::NONE,
-			'p_last_color_change' => null,
-			'p_last_element_change' => null,
-			'p_last_skill_change' => null,
-			'p_last_mode_change' => null,
-			'p_last_activity' => null,
-		));
-		if (!$player->insert())
-		{
-			return false;
-		}
-		foreach (self::$USER_FIELDS as $field)
-		{
-			$player->setVar($field, $user->getVar($field));
-		}
-		$player->afterLoad();
-		return $player;
-	}
-	
+		
 	##################
 	### Connection ###
 	##################
@@ -514,7 +474,7 @@ class TGC_Player extends GDO
 	###############
 	### Levelup ###
 	###############
-	public function giveXP($skill, $xp)
+	public function giveXP($skill, $xp, $announce=true)
 	{
 		$xp = (int)$xp;
 		if ($xp > 0)
@@ -522,13 +482,12 @@ class TGC_Player extends GDO
 			$this->increase('p_'.$skill.'_xp', $xp);
 			if (false !== ($levelDiff = $this->rehashSkill($skill)))
 			{
-				$levelDiff = (int)Common::clamp($levelDiff, 0);
-				for ($i = 0; $i < $levelDiff; $i++)
+				TGC_Levelup::onLevelup($this, $skill, $levelDiff);
+				if ($announce)
 				{
-					TGC_Levelup::onLevelup($this, $skill);
+					$payload = json_encode($this->ownPlayerDTO());
+					$this->sendCommand('TGC_LVLUP', $payload);
 				}
-				$payload = json_encode($this->ownPlayerDTO());
-				$this->sendCommand('TGC_LVLUP', $payload);
 			}
 		}
 	}

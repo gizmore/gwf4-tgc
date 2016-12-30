@@ -45,8 +45,8 @@ class TGC_Spell
 	public function getSkill() { return $this->type === 'BREW' ? 'priest' : 'wizard'; }
 	public function getSpellName() { return implode('', array_slice($this->runes, 1)); }
 	public function power() { return $this->power * $this->powerMultiplier; }
-	public function playerLevel() { return $this->player->wizard() + ceil($this->player->priest()/4); }
-	public function appropiate() { return Common::clamp( ($this->playerLevel() / ($this->level + 3.0)), 0.0, 1.0); }
+	public function playerLevel() { return $this->player->wizard() + ceil($this->player->priest()+1/4) + 1; }
+	public function appropiate() { return Common::clamp( ($this->playerLevel() / ($this->level + 2.0)), 0.0, 1.0); }
 	
 	###############
 	### Factory ###
@@ -156,7 +156,11 @@ class TGC_Spell
 	#################
 	private function failedOfDifficulty()
 	{
-		return TGC_Global::rand(1, 1000) > ($this->appropiate() * 1000);
+		$appropiate = $this->appropiate() * 1000;
+		$appropiate += TGC_Global::rand(0, 100) - 50;
+		$rand = TGC_Global::rand(1, 1000);
+		printf("FailedDiff: %d > %d\n", $rand, $appropiate);
+		return $rand > $appropiate;
 	}
 	
 	private function giveXP($multi=1.0)
@@ -219,33 +223,22 @@ class TGC_Spell
 			{
 				return $this->player->sendError('ERR_NO_AREA');
 			}
-			else
-			{
-				$this->doAreaCast();
-			}
 		}
 		else if ($this->target === $this->player)
 		{
 			if (!$this->canTargetSelf())
 			{
-				$this->player->sendError('ERR_'.$this->type.'_SELF');
-			}
-			else
-			{
-				$this->doCast();
+				return $this->player->sendError('ERR_'.$this->type.'_SELF');
 			}
 		}
 		else
 		{
 			if (!$this->canTargetOther())
 			{
-				$this->player->sendError('ERR_'.$this->type.'_OTHER');
-			}
-			else
-			{
-				$this->doCast();
+				return $this->player->sendError('ERR_'.$this->type.'_OTHER');
 			}
 		}
+		$this->doCast();
 	}
 
 	public function doCast()
@@ -258,7 +251,12 @@ class TGC_Spell
 		else
 		{
 			$this->giveXP(1.00);
-			$this->executeSpell();
+			if ($this->isAreaTarget) {
+				$this->doAreaCast();
+			}
+			else {
+				$this->executeSpell();
+			}
 		}
 	}
 	

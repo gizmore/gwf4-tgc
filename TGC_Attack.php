@@ -21,8 +21,6 @@ final class TGC_Attack
 			return $this->attacker->sendError(TGC_Commands::payload('ERR_ATTACK_SELF', $this->mid));
 		}
 		
-// 		if ($this->attacker->lastAction() )
-		
 		$a = $this->attacker; $d = $this->defender;
 		$loot = array();
 
@@ -43,20 +41,25 @@ final class TGC_Attack
 		$nounName = $noun[0]; $nounPower = $noun[1];
 		
 		# Power
-		$slapPower = 10.0 * ($adverbPower/10.0) * ($verbPower/10.0) * ($adjectivePower/10.0) * ($nounPower/10.0);
+		$slapPower = ceil( (50.0 * ($adverbPower/10.0) * ($verbPower/10.0) * ($adjectivePower/10.0) * ($nounPower/10.0)) / 1000.0 );
 		$modePower = $this->modePowerMultiplier($a, $d);
 		$skillPower = $this->skillPowerMultiplier($a, $d, $skill);
 		$colorPower = $this->colorPowerMultiplier($a, $d);
 		$elementPower = $this->elementPowerMultiplier($a, $d);
-		$power = $slapPower * $modePower * $skillPower * $colorPower * $elementPower;
-		printf("%f * %f * %f * %f * %f\n", $slapPower, $modePower, $skillPower, $colorPower, $elementPower);
+		$endurancePower = $a->endurance();
+		$power = $slapPower * $modePower * $skillPower * $colorPower * $elementPower * $endurancePower;
+		printf("%f * %f * %f * %f * %f * %f\n", $slapPower, $modePower, $skillPower, $colorPower, $elementPower, $endurancePower);
+		
+		# Endurance
+		$a->giveEndurance(ceil($nounPower/10));
 
 		# Deal damage
-		$damage = round(($power - 5)/10);
+		$damage = $power;
 		if ($critical = $this->isCriticalHit($a, $d))
 		{
 			$damage *= 2;
 		}
+		$damage = ceil($damage);
 		$damage = min($damage, $d->hp());
 		$killed = TGC_Kill::damage($a, $d, $damage, $loot);
 		
@@ -96,8 +99,7 @@ final class TGC_Attack
 		);
 		foreach ($this->defender->getLoot() as $key => $value)
 		{
-			$loot[$key] = $loot[$key] ? $loot[$key] : 0;
-			$loot[$key] += $value;
+			$loot[$key] = $loot[$key] ? $loot[$key]+$value : $value;
 		}
 		return $loot;
 	}
@@ -132,31 +134,11 @@ final class TGC_Attack
 	private function skillPowerMultiplier(TGC_Player $attacker, TGC_Player $defender, $skill)
 	{
 		return $attacker->compareTo($defender, $skill);
-// 		$af = $attacker->fighter(); $df = $defender->fighter();
-// 		$an = $attacker->ninja();   $dn = $defender->ninja();
-// 		$ap = $attacker->priest();  $dp = $defender->priest();
-// 		$aw = $attacker->wizard();  $dw = $defender->wizard();
-		
-// 		switch ($skill)
-// 		{
-// 		case 'fighter':
-// 			$atotal = $af + $an;
-// 			break;
-// 		case 'ninja':
-// 			$dtotal = $df + $dn;
-// 			break;
-				
-// 		case 'priest':
-			
-// 		case 'wizard':
-			
-// 		}
-// 		return 1.0;
 	}
 
 	private function colorPowerMultiplier(TGC_Player $attacker, TGC_Player $defender)
 	{
-		return 1.0;
+		return $attacker->getColor() === $defender->getColor() ? 1.0 : 1.0;
 	}
 
 	private function elementPowerMultiplier(TGC_Player $attacker, TGC_Player $defender)

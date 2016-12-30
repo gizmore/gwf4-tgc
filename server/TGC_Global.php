@@ -5,7 +5,8 @@ final class TGC_Global
 	public static $SEED = 31337;
 	public static $TICK = 0;
 	public static $BOTS = array(), $HUMANS = array(), $PLAYERS = array(), $TYPED_BOTS = array();
-	public static $AVERAGE = array();
+	public static $AVG_BASE = array();
+	public static $AVG_ADJUST = array();
 	
 	public static function init($seed)
 	{
@@ -24,13 +25,18 @@ final class TGC_Global
 	############
 	public static function tick()
 	{
-		self::$AVERAGE = array();
+		self::$AVG_BASE = self::$AVG_ADJUST = array();
 		return self::$TICK++;
 	}
 	
 	public static function rand($min, $max)
 	{
 		return GWF_Random::rand($min, $max);
+	}
+	
+	public static function randItem(array $array)
+	{
+		return $array[array_rand($array)];
 	}
 	
 	###############
@@ -99,7 +105,7 @@ final class TGC_Global
 
 	private static function createPlayer(GWF_User $user)
 	{
-		return TGC_Player::createPlayer($user);
+		return TGC_PlayerFactory::human($user);
 	}
 	
 	private static function loadPlayer($name)
@@ -110,18 +116,37 @@ final class TGC_Global
 	###############
 	### Average ###
 	###############
-	public static function average($field)
+	public static function averageBase($field)
 	{
-		if (!isset(self::$AVERAGE[$field]))
+		if (!isset(self::$AVG_BASE[$field]))
 		{
 			$total = 1;
 			$count = count(self::$HUMANS) + 1;
 			foreach (self::$HUMANS as $player)
 			{
-				$total += $player->power($field);
+				$total += $player->base($field);
 			}
-			self::$AVERAGE[$field] = $total / $count;
+			self::$AVG_BASE[$field] = round($total / $count);
 		}
-		return self::$AVERAGE[$field];
+		return self::$AVG_BASE[$field];
+	}
+	
+	public static function averagePower($field)
+	{
+		if (!isset(self::$AVG_ADJUST[$field]))
+		{
+			self::$AVG_ADJUST[$field] = 0;
+			$count = count(self::$HUMANS);
+			if ($count > 0)
+			{
+				$total = 0;
+				foreach (self::$HUMANS as $player)
+				{
+					$total += $player->power($field);
+				}
+				self::$AVG_ADJUST[$field] = round($total / $count);
+			}
+		}
+		return self::$AVG_ADJUST[$field];
 	}
 }

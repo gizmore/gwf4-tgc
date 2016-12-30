@@ -77,7 +77,7 @@ angular.module('gwf4')
 //			image: MapUtil.imageForPlayer(player),
 		});
 		player.marker.addListener('click', function(event) {
-			PlayerDlg.open(event, player);
+			PlayerDlg.open(player);
 		});
 		
 		MapUtil.MARKERS[player] = player.marker;

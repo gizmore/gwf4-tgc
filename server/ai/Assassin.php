@@ -5,6 +5,9 @@
  */
 class TGCAI_Assassin extends TGC_AIScript
 {
+	public function random_hp() { return 4; }
+	public function random_mp() { return 2; }
+	
 	public function findTarget()
 	{
 		return $this->randomHuman();

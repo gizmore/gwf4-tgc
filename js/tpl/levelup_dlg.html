@@ -21,8 +21,8 @@
 			<md-card-title>Skills</md-card-title>
 			<tgc-stat-bar class="fighter-bar" ng-class="{'lvlup':oldFighter()!=newFighter()}" ng-value="oldFighter()" ng-max="newFighter()" label="{{fighterLabel()}}"></tgc-stat-bar>
 			<tgc-stat-bar class="ninja-bar" ng-class="{'lvlup':oldNinja()!=newNinja()}" ng-value="oldNinja()" ng-max="newNinja()" label="{{ninjaLabel()}}"></tgc-stat-bar>
-			<tgc-stat-bar class="priest-bar" ng-value="oldPriest()" ng-max="newPriest()" label="">{{priestLabel()}}</tgc-stat-bar>
-			<tgc-stat-bar class="wizard-bar" ng-value="oldWizard()" ng-max="newWizard()" label="">{{wizardLabel()}}</tgc-stat-bar>
+			<tgc-stat-bar class="priest-bar" ng-value="oldPriest()" ng-max="newPriest()" label="{{priestLabel()}}"></tgc-stat-bar>
+			<tgc-stat-bar class="wizard-bar" ng-value="oldWizard()" ng-max="newWizard()" label="{{wizardLabel()}}"></tgc-stat-bar>
 		</md-card>
 
 	</md-dialog-content>
