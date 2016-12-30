@@ -21,7 +21,7 @@ final class TGC_Attack
 			return $this->attacker->sendError(TGC_Commands::payload('ERR_ATTACK_SELF', $this->mid));
 		}
 		
-		if ($this->attacker->lastAction() )
+// 		if ($this->attacker->lastAction() )
 		
 		$a = $this->attacker; $d = $this->defender;
 		$loot = array();
