@@ -1,40 +1,45 @@
 <md-dialog aria-label="Player dialog">
 	<md-dialog-content layout-padding>
 		
-		<p>{{player.displayName()}} registered {{player.registeredAt()|gwfDate}}</p>
+		<div avatar>
+			<p>{{player.displayName()}} is a {{player.displayGender()}} {{player.displayRace()}}</p>
+			<p>Registered at {{player.registerDate()|gwfDate}}</p>
+		</div>
 		
-		<div ng-if="player.isOwn()">
-			<div><tgc-stat-bar min="0" ng-max="player.maxHP()" ng-value="player.hp()" background="red" color="black" label="HP"></tgc-stat-bar></div>
-			<div><tgc-stat-bar min="0" ng-max="player.maxMP()" ng-value="player.mp()" background="blue" color="black" label="MP"></tgc-stat-bar></div>
+		<div>
+			<div><tgc-item ng-if="player.gold()"><name>Gold</name><value>{{player.gold()}}</value></tgc-item></div>
+			<div>
+				<tgc-item ng-if="player.food()"><name>Food</name><value>{{player.food()}}</value></tgc-item>
+				<tgc-item ng-if="player.water()"><name>Water</name><value>{{player.water()}}</value></tgc-item>
+			</div>
+		</div>
+		
+		<div>
+			<tgc-stat-bar class="hp-bar" ng-if="player.hp()" ng-value="player.hp()" ng-max="player.maxHP()" label="{{player.hp()}} / {{player.maxHP()}} HP"></tgc-stat-bar>
+			<tgc-stat-bar class="mp-bar" ng-if="player.mp()" ng-value="player.mp()" ng-max="player.maxMP()" label="{{player.mp()}} / {{player.maxMP()}} MP"></tgc-stat-bar>
 		</div> 
 
-		<div ng-if="player.isOwn()">
-			<div><tgc-stat-bar min="0" ng-max="player.strength()" ng-value="player.strength()" background="red" color="black" label="strength"></tgc-stat-bar></div>
-			<div><tgc-stat-bar min="0" ng-max="player.dexterity()" ng-value="player.dexterity()" background="black" color="white" label="dexterity"></tgc-stat-bar></div>
-			<div><tgc-stat-bar min="0" ng-max="player.wisdom()" ng-value="player.wisdom()" background="blue" color="black" label="wisdom"></tgc-stat-bar></div>
-			<div><tgc-stat-bar min="0" ng-max="player.intelligence()" ng-value="player.intelligence()" background="green" color="black" label="intelligence"></tgc-stat-bar></div>
-		</div> 
+		<div>
+			<tgc-stat-bar class="strength-bar" ng-if="player.strength()" ng-value="player.strength()" ng-max="player.strength()" label="Strength {{player.strength()}}"></tgc-stat-bar>
+			<tgc-stat-bar class="dexterity-bar" ng-if="player.dexterity()" ng-value="player.dexterity()" ng-max="player.dexterity()" label="Dexterity {{player.dexterity()}}"></tgc-stat-bar>
+			<tgc-stat-bar class="wisdom-bar" ng-if="player.wisdom()" ng-value="player.wisdom()" ng-max="player.wisdom()" label="Wisdom {{player.wisdom()}}"></tgc-stat-bar>
+			<tgc-stat-bar class="intelligence-bar" ng-if="player.intelligence()" ng-value="player.intelligence()" ng-max="player.intelligence()" label="Intelligence {{player.intelligence()}}"></tgc-stat-bar>
+		</div>
+
+		<div>
+			<tgc-stat-bar class="fighter-bar" ng-value="levelupCompleted('xf')" max="100.0" label="{{player.fighterLevelName()}} Fighter"></tgc-stat-bar>
+			<tgc-stat-bar class="ninja-bar" ng-value="levelupCompleted('xn')" ng-max="100.0" label="{{player.ninjaLevelName()}} Ninja"></tgc-stat-bar>
+			<tgc-stat-bar class="priest-bar" ng-value="levelupCompleted('xp')" ng-max="100.0" label="{{player.priestLevelName()}} Priest"></tgc-stat-bar>
+			<tgc-stat-bar class="wizard-bar" ng-value="levelupCompleted('xw')" ng-max="100.0" label="{{player.wizardLevelName()}} Wizard"></tgc-stat-bar>
+		</div>
 		
-		
-		
-		<md-list ng-if="!player.isOwn()">
-			<md-list-item>
-				<div class="tgc-stat-number"><span>Fighter</span>: <b>{{player.fighterLevelName()}}</b></div>
-				<md-button ng-click="fight()" class="md-primary">Fight</md-button>
-			</md-list-item>
-			<md-list-item>
-				<div class="tgc-stat-number"><span>Ninja</span>: <b>{{player.ninjaLevelName()}}</b></div>
-				<md-button ng-click="attack()" class="md-primary">Attack</md-button>
-			</md-list-item>
-			<md-list-item>
-				<div class="tgc-stat-number"><span>Priest</span>: <b>{{player.priestLevelName()}}</b></div>
-				<md-button ng-click="brew()" class="md-primary">Brew</md-button>
-			</md-list-item>
-			<md-list-item>
-				<div class="tgc-stat-number"><span>Wizard</span>: <b>{{player.wizardLevelName()}}</b></div>
-				<md-button ng-click="cast()" class="md-primary">Cast</md-button>
-			</md-list-item>
-		</md-list>
+		<div>
+			<md-button ng-disabled="player.isOwn()" ng-click="fight()" class="md-primary">Fight</md-button>
+			<md-button ng-disabled="player.isOwn()" ng-click="attack()" class="md-primary">Attack</md-button>
+			<md-button ng-click="brew()" class="md-primary">Brew</md-button>
+			<md-button ng-click="cast()" class="md-primary">Cast</md-button>
+		</div>
+
 	</md-dialog-content>
 	<md-dialog-actions>
 		<md-button ng-click="closeDialog()" class="md-primary" aria-label="Close dialog">Close Dialog</md-button>

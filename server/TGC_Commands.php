@@ -60,7 +60,13 @@ final class TGC_Commands extends GWS_Commands
 			$player = self::player($user);
 			$payload = json_decode($payload);
 			$navigator = $payload->user_agent;
-			$player->setVar('user_guest_name', preg_replace('/[^_a-z0-9]*/i', '', $payload->user_guest_name));
+			$oldNick = $user->getVar('user_guest_name');
+			$newNick = empty($oldNick) ? trim(preg_replace('/[^_a-z0-9]*/i', '', $payload->user_guest_name)) : $oldNick;
+			if ( ($oldNick !== $newNick) && ($newNick !== $user->getName()) && (!empty($newNick)) )
+			{
+				$player->setVar('user_guest_name', $newNick);
+				$user->saveVar('user_guest_name', $newNick);
+			}
 			$player->moveTo($payload->lat, $payload->lng);
 			$payload = json_encode(array(
 				'player' => $player->ownPlayerDTO($user),
@@ -79,17 +85,16 @@ final class TGC_Commands extends GWS_Commands
 		try {
 			$player = self::player($user);
 			$data = json_decode($payload);
-			if ($player->getRace() !== TGC_Race::NONE)
+			if ($player->getVar('p_race') !== 'none')
 			{
 				return $player->sendError('ERR_RACE_ALREADY_SET');
 			}
-			if (!TGC_Race::validHumanRace($data->race))
+			if (!TGC_Race::validPlayerRace($data->race))
 			{
 				return $player->sendError('ERR_UNKNOWN_RACE');
 			}
-			$player->setupRace($data->race);
-			$payload = json_encode($player->ownPlayerDTO($user));
-			GWS_Global::sendCommand($user, 'TGC_OWNP', self::payload($payload, $mid));
+			$player->saveVar('p_race', $data->race);
+			$player->sendUpdate();
 		}
 		catch (Exception $e) {
 			GWS_Global::sendError($user, $e->toString());
@@ -105,13 +110,13 @@ final class TGC_Commands extends GWS_Commands
 			{
 				return $player->sendError('ERR_GENDER_ALREADY_SET');
 			}
-			if (!TGC_Race::validGender($data->gender))
+			if ( ($data->gender !== 'male' && $data->gender !== 'female') )
 			{
 				return $player->sendError('ERR_UNKNOWN_GENDER');
 			}
-			$player->setupGender($data->gender);
-			$payload = json_encode($player->ownPlayerDTO($user));
-			GWS_Global::sendCommand($user, 'TGC_OWNP', self::payload($payload, $mid));
+			$user->saveVar('user_gender', $data->gender);
+			$player->setVar('user_gender', $data->gender);
+			$player->sendUpdate();
 		}
 		catch (Exception $e) {
 			GWS_Global::sendError($user, $e->toString());
@@ -260,7 +265,7 @@ final class TGC_Commands extends GWS_Commands
 			{
 				return $player->sendError('ERR_NOT_NEAR');
 			}
-			$target = array($data->lat, $data->lng);
+			$target = array('lat' => $data->lat, 'lng' => $data->lng);
 			if (!($spell = TGC_Spell::factory($player, $target, 'CAST', $data->runes, $mid)))
 			{
 				return $player->sendError('ERR_UNKNOWN_SPELL');

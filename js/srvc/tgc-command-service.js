@@ -76,6 +76,11 @@ TGC.service('TGCCommandSrvc', function($rootScope, $injector, ErrorSrvc, Websock
 		GWF_USER.update(newData);
 	};
 	
+	CommandSrvc.TGC_GAME_OVER = function(payload) {
+		console.log('CommandSrvc.TGC_GAME_OVER()', payload);
+	};
+
+	
 	CommandSrvc.TGC_BOTKILL = function(payload) {
 		console.log('CommandSrvc.TGC_BOTKILL()', payload);
 		var data = JSON.parse(payload);
@@ -91,7 +96,6 @@ TGC.service('TGCCommandSrvc', function($rootScope, $injector, ErrorSrvc, Websock
 		console.log('CommandSrvc.TGC_SLAP()', payload);
 		var data = JSON.parse(payload);
 		CommandSrvc.getEffectSrvc().onGettingAttacked(data);
-		CommandSrvc.getPlayerSrvc().OWN.giveHP(-data.damage);
 		$rootScope.$apply();
 	};
 	
@@ -110,7 +114,7 @@ TGC.service('TGCCommandSrvc', function($rootScope, $injector, ErrorSrvc, Websock
 			PlayerSrvc.addPlayer(player);
 			MapUtil.addPlayer(player);
 		}
-		PlayerSrvc.updateCacheForPlayer(player, data);
+		player.update(data);
 		player.moveTo(data.lat, data.lng)
 		MapUtil.movePlayer(player);
 		return player;
@@ -122,8 +126,10 @@ TGC.service('TGCCommandSrvc', function($rootScope, $injector, ErrorSrvc, Websock
 		var PlayerSrvc = CommandSrvc.getPlayerSrvc();
 		var LevelupDlg = CommandSrvc.getLevelupDlg();
 		var player = PlayerSrvc.getPlayer(data.user_name);
-		PlayerSrvc.updateCacheForPlayer(player, data);
-		return LevelupDlg.open(player, data);
+		if (player) {
+			player.update(data, true);
+			LevelupDlg.open(player, data);
+		}
 	};
 	
 	CommandSrvc.TGC_CHAT = function(payload) {

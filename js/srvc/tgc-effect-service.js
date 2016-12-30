@@ -16,6 +16,20 @@ angular.module('gwf4')
 		console.log('EffectSrvc.onGettingAttacked()', data);
 		var attacker = PlayerSrvc.getPlayer(data.attacker);
 		var defender = PlayerSrvc.getPlayer(data.defender);
+		var xpf = EffectSrvc.xpField(data);
+		if (attacker) {
+			if (data.axp && attacker.JSON[xpf]) {
+				attacker.JSON[xpf] += data.axp;
+			}
+		}
+		if (defender) {
+			if (data.dxp && defender.JSON[xpf]) {
+				defender.JSON[xpf] += data.dxp;
+			}
+			if (data.damage) {
+				defender.giveHP(-data.damage);
+			}
+		}
 		EffectSrvc.attackBox(attacker, defender, EffectSrvc.slapHTML(data));
 	};
 	
@@ -25,10 +39,18 @@ angular.module('gwf4')
 
 	EffectSrvc.slapTitle = function(data) {
 		switch (data.type) {
-		case 'fighter': return "Fight";
-		case 'ninja': return "Attack";
-		case 'priest': return "Potion";
-		case 'wizard': return "Spell";
+		case 'fighter': return 'Fight';
+		case 'ninja': return 'Attack';
+		case 'priest': return 'Potion';
+		case 'wizard': return 'Spell';
+		}
+	};
+	EffectSrvc.xpField = function(data) {
+		switch (data.type) {
+		case 'fighter': return 'xf';
+		case 'ninja': return 'xn';
+		case 'priest': return 'xp';
+		case 'wizard': return 'xw';
 		}
 	};
 	EffectSrvc.slapMessage = function(data) {

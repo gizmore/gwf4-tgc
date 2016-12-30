@@ -1,23 +1,34 @@
 <md-dialog aria-label="Player dialog">
-	<md-dialog-content layout-padding>
-		
-		<p>{{player.name()}}</p>
-		
-		<lvlup-bar>MaxHP: {{player.lastMaxHP()}} => {{player.maxHP()}}</lvlup-bar>
-		<lvlup-bar>MaxMP: {{player.lastMaxMP()}} => {{player.maxMP()}}</lvlup-bar>
+	<md-dialog-content>
+	
+		<p>Levelup!</p>
+	
+		<md-card>
+			<md-card-title>Stats</md-card-title>
+			<tgc-stat-bar class="hp-bar" ng-value="player.lastMaxHP()" ng-max="player.maxHP()" label="{{maxHPLabel()}}"></tgc-stat-bar>
+			<tgc-stat-bar class="mp-bar" ng-value="player.lastMaxMP()" ng-max="player.maxMP()" label="{{maxMPLabel()}}"></tgc-stat-bar>
+		</md-card>
 
-		<lvlup-bar>Fighter: {{player.lastFighterLevelName()}} => {{player.fighterLevelName()}}</lvlup-bar>
-		<lvlup-bar>Ninja: {{player.lastNinjaLevelName()}} => {{player.ninjaLevelName()}}</lvlup-bar>
-		<lvlup-bar>Priest: {{player.lastPriestLevelName()}} => {{player.priestLevelName()}}</lvlup-bar>
-		<lvlup-bar>Wizard: {{player.lastWizardLevelName()}} => {{player.wizardLevelName()}}</lvlup-bar>
+		<md-card>
+			<md-card-title>Attributes</md-card-title>
+			<tgc-stat-bar class="strength-bar" ng-value="oldStrength()" ng-max="newStrength()" label="{{strengthLabel()}}"></tgc-stat-bar>
+			<tgc-stat-bar class="dexterity-bar" ng-value="oldDexterity()" ng-max="newDexterity()" label="{{dexterityLabel()}}"></tgc-stat-bar>
+			<tgc-stat-bar class="wisdom-bar" ng-value="oldWisdom()" ng-max="newWisdom()" label="{{wisdomLabel()}}"></tgc-stat-bar>
+			<tgc-stat-bar class="intelligence-bar" ng-value="oldIntelligence()" ng-max="newIntelligence()" label="{{intelligenceLabel()}}"></tgc-stat-bar>
+		</md-card>
 		
-		<lvlup-bar>Strength: {{player.lastStrength()}} => {{player.strength()}}</lvlup-bar>
-		<lvlup-bar>Dexterity: {{player.lastDexterity()}} => {{player.dexterity()}}</lvlup-bar>
-		<lvlup-bar>Wisdom: {{player.lastWisdom()}} => {{player.wisdom()}}</lvlup-bar>
-		<lvlup-bar>Intelligence: {{player.lastIntelligence()}} => {{player.intelligence()}}</lvlup-bar>
-		
+		<md-card>
+			<md-card-title>Skills</md-card-title>
+			<tgc-stat-bar class="fighter-bar" ng-class="{'lvlup':oldFighter()!=newFighter()}" ng-value="oldFighter()" ng-max="newFighter()" label="{{fighterLabel()}}"></tgc-stat-bar>
+			<tgc-stat-bar class="ninja-bar" ng-class="{'lvlup':oldNinja()!=newNinja()}" ng-value="oldNinja()" ng-max="newNinja()" label="{{ninjaLabel()}}"></tgc-stat-bar>
+			<tgc-stat-bar class="priest-bar" ng-value="oldPriest()" ng-max="newPriest()" label="">{{priestLabel()}}</tgc-stat-bar>
+			<tgc-stat-bar class="wizard-bar" ng-value="oldWizard()" ng-max="newWizard()" label="">{{wizardLabel()}}</tgc-stat-bar>
+		</md-card>
+
 	</md-dialog-content>
+
 	<md-dialog-actions>
 		<md-button ng-click="closeDialog()" class="md-primary" aria-label="Close dialog">Close Dialog</md-button>
 	</md-dialog-actions>
+
 </md-dialog>

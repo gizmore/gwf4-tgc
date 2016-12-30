@@ -1,6 +1,6 @@
 'use strict';
 var TGC = angular.module('gwf4');
-TGC.service('PlayerDlg', function($q, $mdDialog, ErrorSrvc, TGCCommandSrvc, PlayerSrvc, SpellDlg, MapUtil, EffectSrvc) {
+TGC.service('PlayerDlg', function($q, $mdDialog, ErrorSrvc, TGCCommandSrvc, PlayerSrvc, SpellDlg, MapUtil, EffectSrvc, LevelUtil) {
 	
 	var PlayerDlg = this;
 	
@@ -33,6 +33,10 @@ TGC.service('PlayerDlg', function($q, $mdDialog, ErrorSrvc, TGCCommandSrvc, Play
 			$scope.cast = function() {
 				$scope.closeDialog();
 				SpellDlg.show(player, 'cast');
+			};
+			$scope.levelupCompleted = function(field) {
+				var xp = player.JSON[field];
+				return LevelUtil.percentCompleted(xp);
 			};
 			$scope.afterFight = function(result) {
 				console.log('PlayerDlg.afterFight()', result);

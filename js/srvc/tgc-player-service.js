@@ -47,45 +47,32 @@ angular.module('gwf4')
 		return player;
 	};
 	
-	PlayerSrvc.updateCacheForPlayer = function(player, newData) {
-		console.log("PlayerSrvc.updateCacheForPlayer()", player, newData);
-		player.update(newData);
-//		if (!player.recache) {
-//			player.recache = newData.hash != player.hash();
-//			if (player.recache) {
-//				player.hash(newData.hash);
-//			}
-//		}
-		return player;
-	};
-	
-
 	//////////
 	// Auth //
 	//////////
-	PlayerSrvc.pingData = function(data) {
-		console.log("PlayerSrvc.pingData()", data);
-		if (data.authed) {
-			if (!PlayerSrvc.OWN) {
-				PlayerSrvc.login(data);
-			}
-		}
-	};
-	
-	PlayerSrvc.login = function(data) {
-		console.log("PlayerSrvc.login()", data);
-		var player = PlayerSrvc.OWN = new window.TGC.Player(data.player, data.user, data.secret);
-		PlayerSrvc.addPlayer(player);
-		$rootScope.$broadcast('tgc-own-player-loaded', PlayerSrvc.OWN);
-	};
-	
-	
-	PlayerSrvc.logout = function() {
-		console.log("PlayerSrvc.logout()");
-		PlayerSrvc.removePlayer(PlayerSrvc.OWN);
-		$rootScope.$broadcast('tgc-own-player-removed', PlayerSrvc.OWN);
-		PlayerSrvc.OWN = null;
-	};
+//	PlayerSrvc.pingData = function(data) {
+//		console.log("PlayerSrvc.pingData()", data);
+//		if (data.authed) {
+//			if (!PlayerSrvc.OWN) {
+//				PlayerSrvc.login(data);
+//			}
+//		}
+//	};
+//	
+//	PlayerSrvc.login = function(data) {
+//		console.log("PlayerSrvc.login()", data);
+//		var player = PlayerSrvc.OWN = new window.TGC.Player(data.player, data.user, data.secret);
+//		PlayerSrvc.addPlayer(player);
+//		$rootScope.$broadcast('tgc-own-player-loaded', PlayerSrvc.OWN);
+//	};
+//	
+//	
+//	PlayerSrvc.logout = function() {
+//		console.log("PlayerSrvc.logout()");
+//		PlayerSrvc.removePlayer(PlayerSrvc.OWN);
+//		$rootScope.$broadcast('tgc-own-player-removed', PlayerSrvc.OWN);
+//		PlayerSrvc.OWN = null;
+//	};
 	
 	//////////
 	// Lazy //

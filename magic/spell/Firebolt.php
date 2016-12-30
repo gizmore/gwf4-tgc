@@ -8,7 +8,7 @@ class Firebolt extends TGC_Spell
 	
 	private function damage()
 	{
-		return $this->level + $this->power * log($this->power);
+		return $this->level + $this->power() * log($this->power());
 	}
 	
 	public function getCode()
@@ -19,6 +19,7 @@ class Firebolt extends TGC_Spell
 	public function executeSpell()
 	{
 		$damage = $this->damage();
+		$this->player->giveXP('wizard', $this->damage());
 		$loot = array();
 		$killed = TGC_Kill::damage($this->player, $this->target, $damage, $loot);
 		$payload = array(

@@ -14,13 +14,14 @@ final class TGC_Attack
 		$this->mid = $mid;
 	}
 	
-	
 	public function dice($skill)
 	{
 		if ($this->attacker === $this->defender)
 		{
 			return $this->attacker->sendError(TGC_Commands::payload('ERR_ATTACK_SELF', $this->mid));
 		}
+		
+		if ($this->attacker->lastAction() )
 		
 		$a = $this->attacker; $d = $this->defender;
 		$loot = array();
@@ -42,49 +43,48 @@ final class TGC_Attack
 		$nounName = $noun[0]; $nounPower = $noun[1];
 		
 		# Power
-		$power = round(1 * ($adverbPower/10.0) * ($verbPower/10.0) * ($adjectivePower/10.0) * ($nounPower/10.0));
-		$power *= $this->modePowerMultiplier($a, $d);
-		$power *= $this->skillPowerMultiplier($a, $d, $skill);
-		$power *= $this->colorPowerMultiplier($a, $d);
-		$power *= $this->elementPowerMultiplier($a, $d);
-		if ($critical = $this->isCriticalHit($a, $d))
-		{
-			$power *= 2;
-		}
+		$slapPower = 10.0 * ($adverbPower/10.0) * ($verbPower/10.0) * ($adjectivePower/10.0) * ($nounPower/10.0);
+		$modePower = $this->modePowerMultiplier($a, $d);
+		$skillPower = $this->skillPowerMultiplier($a, $d, $skill);
+		$colorPower = $this->colorPowerMultiplier($a, $d);
+		$elementPower = $this->elementPowerMultiplier($a, $d);
+		$power = $slapPower * $modePower * $skillPower * $colorPower * $elementPower;
+		printf("%f * %f * %f * %f * %f\n", $slapPower, $modePower, $skillPower, $colorPower, $elementPower);
 
 		# Deal damage
-		$damage = round($power);
+		$damage = round(($power - 5)/10);
+		if ($critical = $this->isCriticalHit($a, $d))
+		{
+			$damage *= 2;
+		}
+		$damage = min($damage, $d->hp());
 		$killed = TGC_Kill::damage($a, $d, $damage, $loot);
 		
-		# Tell about slap.
-		printf("%s attacks %s with power %s: %s/%sHP left.\n", $a->displayName(), $d->displayName(), $power, $d->hp(), $d->maxHP());
+		# Loot
+		$axp = $damage;
+		$dxp = ceil($damage / 5);
+		$a->giveXP($skill, $axp);
+		$d->giveXP($skill, $dxp);
 		
+		# Announce
 		$payload = array(
+			'type' => $skill,
+			'axp' => $axp,
+			'dxp' => $dxp,
 			'attacker' => $a->getName(),
 			'adverb' => $adverbName,
-			'type' => $skill,
 			'verb' => $verbName,
 			'defender' => $d->getName(),
 			'adjective' => $adjectiveName,
 			'noun' => $nounName,
-			'critical' => $critical,
 			'damage' => $damage,
+			'critical' => $critical,
 			'killed' => $killed,
 			'loot' => $loot,
-// 			'power' => $power,
-// 			'nounPower' => $nounPower,
-// 			'adverbPower' => $adverbPower,
-// 			'verbPower' => $verbPower,
-// 			'adjectivePower' => $adjectivePower,
 		);
 		$payload = TGC_Commands::payload(json_encode($payload), $this->mid);
 		$a->sendCommand('TGC_SLAP', $payload);
 		$d->sendCommand('TGC_SLAP', $payload);
-		
-		# Give XP
-		$xp = round(Common::clamp($power, 1));
-		$a->giveXP($skill, $xp, $this->mid);
-		$d->giveXP($skill, $xp/10, $this->mid);
 	}
 	
 	private function getLoot()
@@ -114,17 +114,18 @@ final class TGC_Attack
 	private function modePowerMultiplier(TGC_Player $a, TGC_Player $d)
 	{
 		$am = $a->getVar('p_active_mode'); $dm = $d->getVar('p_active_mode');
-		if (($am == $dm) || ($am === 'none'))
+		switch($am[0].$dm[0])
 		{
-			return 1.00;
-		}
-		else if ($am == 'attacker')
-		{
-			return 1.05;
-		}
-		else
-		{
-			return 0.95;
+			case 'aa': return 1.10;
+			case 'an': return 1.20;
+			case 'ad': return 0.80;
+			case 'da': return 0.95;
+			case 'dn': return 0.95;
+			case 'dd': return 0.95;
+			case 'na': return 1.05;
+			case 'nn': return 1.05;
+			case 'nd': return 0.80;
+			default: return 1.00;
 		}
 	}
 

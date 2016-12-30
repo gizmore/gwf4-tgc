@@ -61,6 +61,12 @@ tgc-stat-bar right {
 	background: black;
 	opacity: 0.5;
 }
+.hp-bar { background: red; color: black; }
+.mp-bar { background: blue; color: black; }
+.strength-bar, .fighter-bar { background: red; color: black; }
+.dexterity-bar, .ninja-bar { background: black; color: white; }
+.wisdom-bar, .priest-bar { background: blue; color: black; }
+.intelligence-bar, .wizard-bar { background: green; color: black; }
 
 /** **/
 md-dialog-content > p {

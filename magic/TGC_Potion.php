@@ -1,14 +1,12 @@
 <?php
 abstract class TGC_Potion extends TGC_Spell
 {
+	public function cast() { $this->player->sendError('ERR_NO_CAST'); }
+	
 	public function canTargetSelf() { return true; }
 	public function canTargetOther() { return true; }
-	public function waterCost() { return 1; }
-
-	public function dicePower()
-	{
-		$this->power = TGC_Logic::dice(1, 20 * $this->level * $this->player->priestLevel());
-	}
+	public function waterCost() { return $this->level; }
+	public function playerLevel() { return $this->player->priest() + ceil($this->player->wizard()/4); }
 	
 	public function brew()
 	{
@@ -21,11 +19,6 @@ abstract class TGC_Potion extends TGC_Spell
 		{
 			$this->player->sendError('ERR_NO_WATER');
 		}
-	}
-	
-	public function cast()
-	{
-		$this->player->sendError('ERR_NO_CAST');
 	}
 	
 #####

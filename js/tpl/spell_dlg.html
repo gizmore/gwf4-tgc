@@ -6,12 +6,12 @@
 		<div class="spell-row spell-row-0" ng-if="data.runes.length >= 0">
 			<ol>
 				<li ng-if="magicLevel() >= 0"><md-button ng-class="{'selected-rune': data.selectedIDs[0] == 0}" ng-click="spell($event, 0, 0)">{{data.runes[0][0]}}</md-button></li>
-				<li ng-if="magicLevel() >= 0"><md-button ng-class="{'selected-rune': data.selectedIDs[0] == 1}" ng-click="spell($event, 0, 1)">{{data.runes[0][1]}}</md-button></li>
-				<li ng-if="magicLevel() >= 1"><md-button ng-class="{'selected-rune': data.selectedIDs[0] == 2}" ng-click="spell($event, 0, 2)">{{data.runes[0][2]}}</md-button></li>
-				<li ng-if="magicLevel() >= 1"><md-button ng-class="{'selected-rune': data.selectedIDs[0] == 3}" ng-click="spell($event, 0, 3)">{{data.runes[0][3]}}</md-button></li>
-				<li ng-if="magicLevel() >= 2"><md-button ng-class="{'selected-rune': data.selectedIDs[0] == 4}" ng-click="spell($event, 0, 4)">{{data.runes[0][4]}}</md-button></li>
-				<li ng-if="magicLevel() >= 3"><md-button ng-class="{'selected-rune': data.selectedIDs[0] == 5}" ng-click="spell($event, 0, 5)">{{data.runes[0][5]}}</md-button></li>
-				<li ng-if="magicLevel() >= 5"><md-button ng-class="{'selected-rune': data.selectedIDs[0] == 6}" ng-click="spell($event, 0, 6)">{{data.runes[0][6]}}</md-button></li>
+				<li ng-if="magicLevel() >= 1"><md-button ng-class="{'selected-rune': data.selectedIDs[0] == 1}" ng-click="spell($event, 0, 1)">{{data.runes[0][1]}}</md-button></li>
+				<li ng-if="magicLevel() >= 2"><md-button ng-class="{'selected-rune': data.selectedIDs[0] == 2}" ng-click="spell($event, 0, 2)">{{data.runes[0][2]}}</md-button></li>
+				<li ng-if="magicLevel() >= 3"><md-button ng-class="{'selected-rune': data.selectedIDs[0] == 3}" ng-click="spell($event, 0, 3)">{{data.runes[0][3]}}</md-button></li>
+				<li ng-if="magicLevel() >= 4"><md-button ng-class="{'selected-rune': data.selectedIDs[0] == 4}" ng-click="spell($event, 0, 4)">{{data.runes[0][4]}}</md-button></li>
+				<li ng-if="magicLevel() >= 6"><md-button ng-class="{'selected-rune': data.selectedIDs[0] == 5}" ng-click="spell($event, 0, 5)">{{data.runes[0][5]}}</md-button></li>
+				<li ng-if="magicLevel() >= 8"><md-button ng-class="{'selected-rune': data.selectedIDs[0] == 6}" ng-click="spell($event, 0, 6)">{{data.runes[0][6]}}</md-button></li>
 			</ol>
 		</div>
 	

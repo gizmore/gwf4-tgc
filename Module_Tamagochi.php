@@ -4,6 +4,7 @@ require_once 'util/TGC_Logic.php';
 require_once 'util/TGC_Position.php';
 require_once 'util/TGC_Race.php';
 require_once 'util/TGC_Kill.php';
+require_once 'util/TGC_Levelup.php';
 require_once 'TGC_Player.php';
 require_once 'TGC_Bot.php';
 require_once 'TGC_Attack.php';
@@ -35,6 +36,7 @@ final class Module_Tamagochi extends GWF_Module
 	### Config ###
 	##############
 	public function cfgRuneconfig() { return $this->initRunes(); }
+	public function cfgLevels() { $r = $this->initRunes(); return $r['levels']; }
 	public function cfgRunes() { $r = $this->initRunes(); return $r['runes']; }
 	public function cfgRunecost() { $r = $this->initRunes(); return $r['runecost']; }
 	public function cfgWelcomeMessage() { return $this->getModuleVar('tgc_welcome_msg', 'TGCv1'); }
@@ -90,9 +92,9 @@ final class Module_Tamagochi extends GWF_Module
 	private function getTGCConfigJS()
 	{
 		$this->initRunes();
-		$levels = GWF_Javascript::toJavascriptArray(TGC_Const::$LEVELS);
 		$runes = json_encode($this->runes['runes']);
 		$runecost = json_encode($this->runes['runecost']);
+		$levels = json_encode($this->runes['levels']);
 		$version = $this->getVersion();
 		return sprintf('window.TGC_CONFIG = { levels: %s, runes: %s, runecost: %s, version: %0.2f };', $levels, $runes, $runecost, $version);
 	}
@@ -131,6 +133,8 @@ final class Module_Tamagochi extends GWF_Module
 		$this->addJavascript('dlg/tgc-player-dialog.js');
 		$this->addJavascript('dlg/tgc-spell-dialog.js');
 		# Util
+		$this->addJavascript('util/tgc-rand-util.js');
+		$this->addJavascript('util/tgc-level-util.js');
 		$this->addJavascript('util/tgc-color-util.js');
 		$this->addJavascript('util/tgc-map-util.js');
 		$this->addJavascript('util/tgc-shape-util.js');

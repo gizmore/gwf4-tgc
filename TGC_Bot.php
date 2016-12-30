@@ -14,7 +14,8 @@ final class TGC_Bot extends TGC_Player
 	public function target() { return $this->script->target(); }
 	public function handler() { return TGC_AI::instance()->handler(); }
 	public function lastCommand() { return $this->command; }
-	
+	public function killXP(TGC_Player $killer) { return 1 + $this->playerLevel(); }
+
 	############
 	### Stub ###
 	############
@@ -34,7 +35,6 @@ final class TGC_Bot extends TGC_Player
 			$this->forNearMe(function(TGC_Player $player, $payload) {
 				$player->sendCommand('TGC_BOTKILL', $payload);
 			}, $payload);
-			TGC_Global::removePlayer($this);
 		}
 	}
 	

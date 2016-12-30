@@ -8,9 +8,11 @@ class TGC_Spell
 
 	public $player;
 	public $target;
+	public $areaTarget;
 	public $isAreaTarget;
 	
 	public $power;    // %2$s
+	public $powerMultiplier = 1.0;
 	public $effect;   // %3$s
 	public $duration; // %4$s
 
@@ -22,6 +24,7 @@ class TGC_Spell
 	### Interface ###
 	#################
 	public function getCode() { return ''; } # JS Code
+	public function getXP() { return ceil($this->power + 5); }
 	
 	public function getCodename() { return $this->getSpellName(); }
 	public function getCodenameLowercase() { return strtolower($this->getCodename()); }
@@ -41,6 +44,9 @@ class TGC_Spell
 	public function valid() { return $this->runes !== false; }
 	public function getSkill() { return $this->type === 'BREW' ? 'priest' : 'wizard'; }
 	public function getSpellName() { return implode('', array_slice($this->runes, 1)); }
+	public function power() { return $this->power * $this->powerMultiplier; }
+	public function playerLevel() { return $this->player->wizard() + ceil($this->player->priest()/4); }
+	public function appropiate() { return Common::clamp( ($this->playerLevel() / ($this->level + 3.0)), 0.0, 1.0); }
 	
 	###############
 	### Factory ###
@@ -109,8 +115,10 @@ class TGC_Spell
 		$this->type = $type;
 		$this->runes = $this->parseRunes($runes);
 		$this->mid = $mid;
-		$this->isAreaTarget = (!($target instanceof TGC_Player));
-
+		if ($this->isAreaTarget = (!($target instanceof TGC_Player)))
+		{
+			$this->areaTarget = $target;
+		}
 		$this->dicePower();
 	}
 	
@@ -137,13 +145,10 @@ class TGC_Spell
 		return $back;
 	}
 
-	private function dicePower()
+	public function dicePower()
 	{
-		$wl = $this->player->wizardLevel();
-		$appropiate = Common::clamp( ($wl / ($this->level + 1.0)), 0.0, 1.0);
-		$this->power = TGC_Logic::dice($this->level, $this->level * ceil($wl / 3));
-// 		$this->effect = round($this->power / 10.0);
-// 		$this->duration = 10 + $this->power;
+		$this->power = TGC_Logic::dice($this->level, 1 + $this->level + ceil($this->playerLevel() / 3.0));
+		$this->power = ceil($this->power * $this->appropiate());
 	}
 	
 	#################
@@ -151,18 +156,12 @@ class TGC_Spell
 	#################
 	private function failedOfDifficulty()
 	{
-		
-// 		$minPower = (int) Common::Clamp($this->getMinPower(), 1);
-// 		$minPower = 20 * $this->level + $minPower;
-// 		echo "LEVEL: $this->level\n";
-// 		echo "POWER: $this->power\n";
-// 		echo "MIN POWER: $minPower\n";
-// 		return $this->power >= $minPower;
+		return TGC_Global::rand(1, 1000) > ($this->appropiate() * 1000);
 	}
 	
 	private function giveXP($multi=1.0)
 	{
-		$this->player->giveXP($this->getSkill(), round($this->power * $multi));
+		$this->player->giveXP($this->getSkill(), ceil($this->getXP() * $multi));
 	}
 	
 	############
@@ -181,22 +180,20 @@ class TGC_Spell
 	private function defaultPayload($json, $message=null, $code='')
 	{
 		return json_encode(array_merge(array(
-				'spell' => $this->getSpellName(),
-				'player' => $this->player->getName(),
-				'runes' => implode(',', $this->runes),
-				'level' => $this->level,
-				'power' => $this->power,
-				'message' => $message,
-				'cost' => $this->cost,
-				'code' => $code,
-			), $json, $this->targetPayload()));
+			'spell' => $this->getSpellName(),
+			'player' => $this->player->getName(),
+			'runes' => implode(',', $this->runes),
+			'level' => $this->level,
+			'power' => $this->power,
+			'message' => $message,
+			'cost' => $this->cost,
+			'code' => $code,
+		), $json, $this->targetPayload()));
 	}
 	
 	private function targetPayload()
 	{
-		return $this->isAreaTarget ? $this->target : array(
-			'target' => $this->target->getName()
-		);
+		return $this->isAreaTarget ? $this->areaTarget : array('target' => $this->target->getName());
 	}
 	
 	public function brew()
@@ -267,22 +264,20 @@ class TGC_Spell
 	
 	public function doAreaCast()
 	{
-		$oldTarget = $this->target;
-		TGC_Logic::forPlayersNear($lat, $lng, array($this, 'doAreaCastFor'));
-		$this->target = $oldTarget;
+		TGC_Logic::forPlayersNear($this->areaTarget['lat'], $this->areaTarget['lng'], array($this, 'doAreaCastFor'));
 	}
 	
 	public function doAreaCastFor(TGC_Player $target, $distanceKM)
 	{
 		$this->target = $target;
-		$this->power = $this->distancePower($distanceKM);
+		$this->powerMultiplier = $this->areaDistancePower($distanceKM);
 		$this->executeSpell();
 	}
 	
 	public function areaDistancePower($distanceKM)
 	{
 		$distanceKM = Common::clamp(1/$distanceKM, 0.01, 1.00);
-		return pow($this->power, $distanceKM);
+		return pow(1, $distanceKM);
 	}
 
 ######
