@@ -50,8 +50,6 @@ angular.module('gwf4')
 		}
 		var parentEl = angular.element(document.body);
 		$mdDialog.show({
-//			parent: document.getElementById('TGCMAP'),
-//			targetEvent: $event,
 			templateUrl: GWF_WEB_ROOT+'module/Tamagochi/js/tpl/levelup_dlg.html',
 			locals: {
 				player: player,

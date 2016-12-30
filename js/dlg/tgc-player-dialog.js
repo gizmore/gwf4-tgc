@@ -49,8 +49,6 @@ TGC.service('PlayerDlg', function($q, $mdDialog, ErrorSrvc, TGCCommandSrvc, Play
 		}
 		var parentEl = angular.element(document.body);
 		$mdDialog.show({
-//			parent: document.getElementById('TGCMAP'),
-//			targetEvent: $event,
 			templateUrl: GWF_WEB_ROOT+'module/Tamagochi/js/tpl/player_dlg.html',
 			locals: {
 				player: player

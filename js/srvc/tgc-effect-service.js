@@ -105,7 +105,7 @@ angular.module('gwf4')
 			content: content,
 			position: latLng,
 		});
-		attackBox.open(MapUtil.map());
+		attackBox.open(MapUtil.tgcMap());
 		setTimeout(EffectSrvc.closeAttackBox.bind(EffectSrvc, attackBox), 10000);
 	};
 

@@ -1,11 +1,9 @@
 'use strict';
 var TGC = angular.module('gwf4');
-TGC.controller('TGCMapCtrl', function($scope, PlayerSrvc, TGCMapUtil, MapUtil, PositionSrvc) {
+TGC.controller('TGCMapCtrl', function($scope, PlayerSrvc, PositionSrvc, MapUtil, TGCMapUtil) {
 
-	var map = MapUtil.map('TGCMAP');
-	
 	$scope.data = {
-		map: map,
+		map: MapUtil.tgcMap(),
 	};
 	
 	$scope.init = function() {
@@ -19,9 +17,7 @@ TGC.controller('TGCMapCtrl', function($scope, PlayerSrvc, TGCMapUtil, MapUtil, P
 	$scope.positionChanged = function($event, position) {
 		console.log('MapCtrl.positionChanged()', position);
 		// Recenter yourself
-		MapUtil.center
-		var map = MapUtil.map('TGCMAP');
-		map.setCenter(MapUtil.positionToLatLng(position));
+		MapUtil.TGC_MAP.setCenter(MapUtil.positionToLatLng(position));
 	};
 	$scope.$on('tgc-position-changed', $scope.positionChanged);
 	$scope.init();

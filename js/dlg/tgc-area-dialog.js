@@ -26,8 +26,6 @@ angular.module('gwf4')
 		}
 		var parentEl = angular.element(document.body);
 		$mdDialog.show({
-//			parent: document.getElementById('TGCMAP'),
-//			targetEvent: $event,
 			templateUrl: GWF_WEB_ROOT+'module/Tamagochi/js/tpl/terrain_dlg.html',
 			locals: {
 				latLng: latLng,

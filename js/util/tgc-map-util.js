@@ -2,20 +2,19 @@
 angular.module('gwf4')
 .service('TGCMapUtil', function(MapUtil, ColorUtil, AreaDlg, PlayerDlg, PlayerSrvc, ShapeUtil) {
 	
-	MapUtil.MARKERS = {};
+	MapUtil.TGC_MAP = null; // Main game map.
+	
+	MapUtil.OPTIONS.minZoom = 1; // Debug
 
-	MapUtil.gwfMap = MapUtil.map;
-	MapUtil.map = function(id) {
-		if (MapUtil.MAP) {
-			return MapUtil.MAP;
+	MapUtil.MARKERS = {}; // All player markers
+	
+	MapUtil.tgcMap = function() {
+		if (!MapUtil.TGC_MAP) {
+			MapUtil.TGC_MAP = MapUtil.map('TGCMAP');
+			MapUtil.TGC_MAP.addListener('click', MapUtil.mapClicked);
+			MapUtil.TGC_MAP.addListener('center_changed', MapUtil.panBack);
 		}
-		var map = MapUtil.gwfMap(id);
-		if (!map) {
-			return undefined;
-		}
-		MapUtil.MAP.addListener('click', MapUtil.mapClicked);
-		MapUtil.MAP.addListener('center_changed', MapUtil.panBack);
-		return MapUtil.MAP;
+		return MapUtil.TGC_MAP;
 	};
 	
 	MapUtil.mapClicked = function(event) {
@@ -30,7 +29,7 @@ angular.module('gwf4')
 		}
 		if ( (PlayerSrvc.OWN) && (PlayerSrvc.OWN.hasPosition()) && (!PlayerSrvc.OWN.NO_SCROLL_LOCK) ) {
 			MapUtil.PAN_TIMER = window.setTimeout(function() {
-				MapUtil.MAP.panTo(PlayerSrvc.OWN.latLng());
+				MapUtil.TGC_MAP.panTo(PlayerSrvc.OWN.latLng());
 			}, MapUtil.PAN_TIMEOUT);
 		}
 	};
@@ -71,7 +70,7 @@ angular.module('gwf4')
 		console.log('MapUtil.addMarkerForPlayer()', player, player.lat(), player.lng());
 		player.marker = new google.maps.Marker({
 			position: player.latLng(),
-			map: MapUtil.map(),
+			map: MapUtil.TGC_MAP,
 			title: player.user.displayName(),
 			label: player.user.displayName(),
 			size: MapUtil.sizeForPlayer(player),
@@ -106,8 +105,8 @@ angular.module('gwf4')
 		console.log('MapUtil.movePlayer()', player, player.lat(), player.lng());
 		var marker = player.marker ? player.marker : MapUtil.addMarkerForPlayer(player);
 		MapUtil.styleMarkerForPlayer(player);
-		ShapeUtil.initShape(player, MapUtil.map());
-		ShapeUtil.addPlayer(player, MapUtil.map());
+		ShapeUtil.initShape(player, MapUtil.TGC_MAP);
+		ShapeUtil.addPlayer(player, MapUtil.TGC_MAP);
 	};
 	
 	MapUtil.styleMarkerForPlayer = function(player) {
