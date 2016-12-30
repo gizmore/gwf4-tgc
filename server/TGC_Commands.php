@@ -74,6 +74,50 @@ final class TGC_Commands extends GWS_Commands
 		}
 	}
 	
+	public function cmd_tgcRace(GWF_User $user, $payload, $mid)
+	{
+		try {
+			$player = self::player($user);
+			$data = json_decode($payload);
+			if ($player->getRace() !== TGC_Race::NONE)
+			{
+				return $player->sendError('ERR_RACE_ALREADY_SET');
+			}
+			if (!TGC_Race::validHumanRace($data->race))
+			{
+				return $player->sendError('ERR_UNKNOWN_RACE');
+			}
+			$player->setupRace($data->race);
+			$payload = json_encode($player->ownPlayerDTO($user));
+			GWS_Global::sendCommand($user, 'TGC_OWNP', self::payload($payload, $mid));
+		}
+		catch (Exception $e) {
+			GWS_Global::sendError($user, $e->toString());
+		}
+	}
+	
+	public function cmd_tgcGender(GWF_User $user, $payload, $mid)
+	{
+		try {
+			$player = self::player($user);
+			$data = json_decode($payload);
+			if ($player->getGender() !== 'no_gender')
+			{
+				return $player->sendError('ERR_GENDER_ALREADY_SET');
+			}
+			if (!TGC_Race::validGender($data->gender))
+			{
+				return $player->sendError('ERR_UNKNOWN_GENDER');
+			}
+			$player->setupGender($data->gender);
+			$payload = json_encode($player->ownPlayerDTO($user));
+			GWS_Global::sendCommand($user, 'TGC_OWNP', self::payload($payload, $mid));
+		}
+		catch (Exception $e) {
+			GWS_Global::sendError($user, $e->toString());
+		}
+	}
+	
 	public function cmd_tgcPause(GWF_User $user, $payload, $mid)
 	{
 		try {
@@ -109,11 +153,8 @@ final class TGC_Commands extends GWS_Commands
 			{
 				return $player->sendError('ERR_UNKNOWN_PLAYER');
 			}
-			$payload = json_encode(array(
-				'player' => $p->otherPlayerDTO(),
-				'tick' => TGC_Global::$TICK,
-			));
-			GWS_Global::sendCommand($user, 'TGC_HELO', self::payload($payload, $mid));
+			$payload = $p->getUserID() === $user->getID() ? $p->ownPlayerDTO() : $p->otherPlayerDTO();
+			GWS_Global::sendCommand($user, 'TGC_PLAYER', self::payload(json_encode($payload), $mid));
 		}
 		catch (Exception $e) {
 			GWS_Global::sendError($user, $e->toString());
@@ -190,16 +231,6 @@ final class TGC_Commands extends GWS_Commands
 		}
 	}
 
-// 	public function cmd_tgcCastLL(GWF_User $user, $payload, $mid)
-// 	{
-		
-// 	}
-	
-// 	public function cmdtgcCastLL(TGC_Player $player, $lat, $lng, $runes)
-// 	{
-		
-// 	}
-	
 	public function cmd_tgcCast(GWF_User $user, $payload, $mid)
 	{
 		try {
@@ -219,4 +250,26 @@ final class TGC_Commands extends GWS_Commands
 			GWS_Global::sendError($user, $e->toString());
 		}
 	}
+
+	public function cmd_tgcCastLL(GWF_User $user, $payload, $mid)
+	{
+		try {
+			$player = self::player($user);
+			$data = json_decode($payload);
+			if (!TGC_Logic::isPlayerNear($player, $data->lat, $data->lng))
+			{
+				return $player->sendError('ERR_NOT_NEAR');
+			}
+			$target = array($data->lat, $data->lng);
+			if (!($spell = TGC_Spell::factory($player, $target, 'CAST', $data->runes, $mid)))
+			{
+				return $player->sendError('ERR_UNKNOWN_SPELL');
+			}
+			$spell->cast();
+		}
+		catch (Exception $e) {
+			GWS_Global::sendError($user, $e->toString());
+		}
+	}
+	
 }

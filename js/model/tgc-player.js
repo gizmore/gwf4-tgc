@@ -77,6 +77,7 @@ function TGC_Player(json) {
 	this.lastSlap = function() {};
 	
 	this.update = function(json) {
+		console.log('TGC_Player.update()', json);
 		for (var i in this.JSON) {
 			if (this.JSON.hasOwnProperty(i)) {
 				this.LAST_JSON[i] = JSON[i];

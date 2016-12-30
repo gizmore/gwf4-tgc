@@ -1,7 +1,7 @@
 <?php
 class Firebolt extends TGC_Spell
 {
-	public function getCodename()
+	public function getSpellName()
 	{
 		return 'firebolt';
 	}

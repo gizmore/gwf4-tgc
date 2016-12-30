@@ -60,11 +60,11 @@ final class TGC_Attack
 		printf("%s attacks %s with power %s: %s/%sHP left.\n", $a->displayName(), $d->displayName(), $power, $d->hp(), $d->maxHP());
 		
 		$payload = array(
-			'attacker' => $a->displayName(),
+			'attacker' => $a->getName(),
 			'adverb' => $adverbName,
 			'type' => $skill,
 			'verb' => $verbName,
-			'defender' => $d->displayName(),
+			'defender' => $d->getName(),
 			'adjective' => $adjectiveName,
 			'noun' => $nounName,
 			'critical' => $critical,

@@ -16,7 +16,6 @@ return array(
 	'CAST' => array(
 		'FUL' => 'Torch',
 		'FUL,IR' => 'Firebolt',
-		'FUL,IR,RA' => 'Firebolt',
 	) ,
 	
 	'BREW' => array(

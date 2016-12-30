@@ -3,12 +3,21 @@
 		
 		<p>{{player.displayName()}} registered {{player.registeredAt()|gwfDate}}</p>
 		
-		<div ng-hide="!player.isOwn()">
-			<div><tgc-stat-bar min="0" ng-max="player.maxHP()" ng-value="player.hp()" color="red" label="HP"></tgc-stat-bar></div>
-			<div><tgc-stat-bar min="0" ng-max="player.maxMP()" ng-value="player.mp()" color="blue" label="MP"></tgc-stat-bar></div>
+		<div ng-if="player.isOwn()">
+			<div><tgc-stat-bar min="0" ng-max="player.maxHP()" ng-value="player.hp()" background="red" color="black" label="HP"></tgc-stat-bar></div>
+			<div><tgc-stat-bar min="0" ng-max="player.maxMP()" ng-value="player.mp()" background="blue" color="black" label="MP"></tgc-stat-bar></div>
+		</div> 
+
+		<div ng-if="player.isOwn()">
+			<div><tgc-stat-bar min="0" ng-max="player.strength()" ng-value="player.strength()" background="red" color="black" label="strength"></tgc-stat-bar></div>
+			<div><tgc-stat-bar min="0" ng-max="player.dexterity()" ng-value="player.dexterity()" background="black" color="white" label="dexterity"></tgc-stat-bar></div>
+			<div><tgc-stat-bar min="0" ng-max="player.wisdom()" ng-value="player.wisdom()" background="blue" color="black" label="wisdom"></tgc-stat-bar></div>
+			<div><tgc-stat-bar min="0" ng-max="player.intelligence()" ng-value="player.intelligence()" background="green" color="black" label="intelligence"></tgc-stat-bar></div>
 		</div> 
 		
-		<md-list>
+		
+		
+		<md-list ng-if="!player.isOwn()">
 			<md-list-item>
 				<div class="tgc-stat-number"><span>Fighter</span>: <b>{{player.fighterLevelName()}}</b></div>
 				<md-button ng-click="fight()" class="md-primary">Fight</md-button>

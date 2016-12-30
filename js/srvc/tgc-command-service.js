@@ -70,10 +70,11 @@ TGC.service('TGCCommandSrvc', function($rootScope, $injector, ErrorSrvc, Websock
 	/////////////////////
 	// Server commands //
 	/////////////////////
-//	CommandSrvc.PONG = function($scope, payload) {
-//		console.log('CommandSrvc.PONG()', payload);
-//		$scope.data.version = payload;
-//	};
+	CommandSrvc.TGC_SELF = function(payload) {
+		console.log('CommandSrvc.TGC_SELF()', payload);
+		PlayerSrvc.OWN = PlayerSrvc.updatePlayerCache(JSON.parse(payload));
+		GWF_USER.update(newData);
+	};
 	
 	CommandSrvc.TGC_BOTKILL = function(payload) {
 		console.log('CommandSrvc.TGC_BOTKILL()', payload);
@@ -160,26 +161,19 @@ TGC.service('TGCCommandSrvc', function($rootScope, $injector, ErrorSrvc, Websock
 	CommandSrvc.TGC_MAGIC = function(payload) {
 		console.log('CommandSrvc.TGC_MAGIC()', payload);
 		var data = JSON.parse(payload);
-		var MapUtil = CommandSrvc.getMapUtil();
 		var PlayerSrvc = CommandSrvc.getPlayerSrvc();
 		var EffectSrvc = CommandSrvc.getEffectSrvc();
 		
 		var OWN = PlayerSrvc.OWN;
 		var PLAYER = PlayerSrvc.getPlayer(data.player);
 		var TARGET = PlayerSrvc.getPlayer(data.target);
+		if ( (data.cost) && (data.player === OWN.name()) ) {
+			OWN.giveMP(-data.cost);
+		}
 		if (data.code) {
 			eval(data.code);
 		}
-		else if (data.player === OWN.name()) {
-			OWN.giveMP(-data.cost);
-			EffectSrvc.onCastSelf(data);
-		}
-		else if (data.target === OWN.name()) {
-			EffectSrvc.onCastOther(data);
-		}
-		else {
-			EffectSrvc.onCastArea(data);
-		}
+		EffectSrvc.onMagic(data);
 	};
 	
 	return CommandSrvc;

@@ -8,6 +8,7 @@ class TGC_Spell
 
 	public $player;
 	public $target;
+	public $isAreaTarget;
 	
 	public $power;    // %2$s
 	public $effect;   // %3$s
@@ -22,17 +23,18 @@ class TGC_Spell
 	#################
 	public function getCode() { return ''; } # JS Code
 	
-	public function getCodename() { return 'generic'; }
+	public function getCodename() { return $this->getSpellName(); }
 	public function getCodenameLowercase() { return strtolower($this->getCodename()); }
 
-	public function canTargetSelf() { return false; }
-	public function canTargetArea() { return false; }
-	public function canTargetOther() { return false; }
+	public function canTargetSelf() { return true; }
+	public function canTargetArea() { return true; }
+	public function canTargetOther() { return true; }
 
-	public function ownMessage() { return self::$m->lang('spell_'.$this->getCodenameLowercase().'_own', array($this->getCodename(), $this->power, $this->effect, $this->duration)); }
-	public function meMessage() { return self::$m->lang('spell_'.$this->getCodenameLowercase().'_me', array($this->power, $this->power, $this->effect, $this->duration)); }
-	public function otherMessage() { return self::$m->lang('spell_'.$this->getCodenameLowercase().'_other', array($this->power, $this->power, $this->effect, $this->duration)); }
-	
+	public function ownMessage() { return self::$m->lang('spell_'.$this->getCodenameLowercase().'_own', $this->defaultMessageArgs()); }
+	public function meMessage() { return self::$m->lang('spell_'.$this->getCodenameLowercase().'_me', $this->defaultMessageArgs()); }
+	public function otherMessage() { return self::$m->lang('spell_'.$this->getCodenameLowercase().'_other', $this->defaultMessageArgs()); }
+	public function defaultMessageArgs() { return array($this->getSpellName(), $this->player->getName(), $this->target->getName(), $this->power, $this->effect, $this->duration); }
+
 	##############
 	### Getter ###
 	##############
@@ -107,7 +109,8 @@ class TGC_Spell
 		$this->type = $type;
 		$this->runes = $this->parseRunes($runes);
 		$this->mid = $mid;
-		
+		$this->isAreaTarget = (!($target instanceof TGC_Player));
+
 		$this->dicePower();
 	}
 	
@@ -178,16 +181,22 @@ class TGC_Spell
 	private function defaultPayload($json, $message=null, $code='')
 	{
 		return json_encode(array_merge(array(
-			'spell' => $this->getSpellName(),
-			'player' => $this->player->getName(),
-			'target' => $this->target->getName(),
-			'runes' => implode(',', $this->runes),
-			'level' => $this->level,
-			'power' => $this->power,
-			'message' => $message,
-			'cost' => $this->cost,
-			'code' => $code,
-		), $json));
+				'spell' => $this->getSpellName(),
+				'player' => $this->player->getName(),
+				'runes' => implode(',', $this->runes),
+				'level' => $this->level,
+				'power' => $this->power,
+				'message' => $message,
+				'cost' => $this->cost,
+				'code' => $code,
+			), $json, $this->targetPayload()));
+	}
+	
+	private function targetPayload()
+	{
+		return $this->isAreaTarget ? $this->target : array(
+			'target' => $this->target->getName()
+		);
 	}
 	
 	public function brew()
@@ -207,11 +216,15 @@ class TGC_Spell
 			return $this->player->sendError('ERR_NO_MP');
 		}
 		
-		if (!($this->target instanceof TGC_Player))
+		if ($this->isAreaTarget)
 		{
 			if (!$this->canTargetArea())
 			{
 				return $this->player->sendError('ERR_NO_AREA');
+			}
+			else
+			{
+				$this->doAreaCast();
 			}
 		}
 		else if ($this->target === $this->player)
@@ -252,6 +265,25 @@ class TGC_Spell
 		}
 	}
 	
+	public function doAreaCast()
+	{
+		$oldTarget = $this->target;
+		TGC_Logic::forPlayersNear($lat, $lng, array($this, 'doAreaCastFor'));
+		$this->target = $oldTarget;
+	}
+	
+	public function doAreaCastFor(TGC_Player $target, $distanceKM)
+	{
+		$this->target = $target;
+		$this->power = $this->distancePower($distanceKM);
+		$this->executeSpell();
+	}
+	
+	public function areaDistancePower($distanceKM)
+	{
+		$distanceKM = Common::clamp(1/$distanceKM, 0.01, 1.00);
+		return pow($this->power, $distanceKM);
+	}
 
 ######
 

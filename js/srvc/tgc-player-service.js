@@ -48,7 +48,7 @@ angular.module('gwf4')
 	};
 	
 	PlayerSrvc.updateCacheForPlayer = function(player, newData) {
-		console.log("PlayerSrvc.updateCacheForPlayer()", player);
+		console.log("PlayerSrvc.updateCacheForPlayer()", player, newData);
 		player.update(newData);
 //		if (!player.recache) {
 //			player.recache = newData.hash != player.hash();

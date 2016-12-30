@@ -16,27 +16,8 @@ angular.module('gwf4')
 		console.log('EffectSrvc.onGettingAttacked()', data);
 		var attacker = PlayerSrvc.getPlayer(data.attacker);
 		var defender = PlayerSrvc.getPlayer(data.defender);
-		var points = [];
-		if (attacker) {
-			points.push(attacker.latLng());
-		}
-		if (defender) {
-			points.push(defender.latLng());
-		}
-		var map = MapUtil.map();
-		var attackBox = new google.maps.InfoWindow({
-			content: EffectSrvc.slapHTML(data),
-			position: MapUtil.middle(points),
-		});
-		attackBox.open(map);
-		setTimeout(EffectSrvc.afterGettingAttacked.bind(EffectSrvc, attackBox, data), 10000);
+		EffectSrvc.attackBox(attacker, defender, EffectSrvc.slapHTML(data));
 	};
-	
-	EffectSrvc.afterGettingAttacked = function(attackBox, data) {
-		attackBox.setMap(null);
-		attackBox.close();
-	};
-	
 	
 	EffectSrvc.slapHTML = function(data) {
 		return sprintf('<b>%s</b><br/>%s', EffectSrvc.slapTitle(data), EffectSrvc.slapMessage(data));
@@ -51,32 +32,65 @@ angular.module('gwf4')
 		}
 	};
 	EffectSrvc.slapMessage = function(data) {
-		var damage = data.critical ? sprintf('<critical>%s damage</critical>', data.damage) : data.damage;
+		var attacker = PlayerSrvc.getPlayer(data.attacker);
+		var defender = PlayerSrvc.getPlayer(data.defender);
+		attacker = attacker ? attacker.displayName() : data.attacker;
+		defender = defender ? defender.displayName() : data.defender;
+		var damage = data.critical ? sprintf('<critical>%s damage</critical>', data.damage) : sprintf('%s damage', data.damage);
 		damage = data.killed ? sprintf('<b>Killed</b> with %s!', damage) : sprintf('This caused %s.', damage);
-		return sprintf('%s %s %s %s with %s %s.<br/>%s', data.attacker, data.adverb, data.verb, data.defender, data.adjective, data.noun, damage);
+		return sprintf('%s %s %s %s with %s %s.<br/>%s', attacker, data.adverb, data.verb, defender, data.adjective, data.noun, damage);
 	}
 	
 	///////////
 	// Magic //
 	///////////
-	EffectSrvc.onCastFailed = function(data) {
-		console.log('EffectSrvc.onCastFailed()', data);
+	EffectSrvc.onMagic = function(data) {
+		console.log('EffectSrvc.onMagic()', data);
+		var player = PlayerSrvc.getPlayer(data.player);
+		var target = PlayerSrvc.getPlayer(data.target);
+		var position = EffectSrvc.magicPosition(data);
+		EffectSrvc.attackBoxPos(position, EffectSrvc.magicHTMLContent(data));
 	};
-
-	EffectSrvc.onCastSelf = function(data) {
-		console.log('EffectSrvc.onCastSelf()', data);
-		if (data.message) {
-			ErrorSrvc.showMessage(data.message, 'Casting');
+	
+	EffectSrvc.magicPosition = function(data) {
+		if (data.lat) {
+			return MapUtil.coordsToLatLng(data.lat, data.lng);
 		}
-	};
-	EffectSrvc.onCastArea= function(data) {
-		console.log('EffectSrvc.onCastArea()', data);
-	};
-	EffectSrvc.onCastOther = function(data) {
-		console.log('EffectSrvc.onCastOther()', data);
+		var target = PlayerSrvc.getPlayer(data.target);
+		if (target && target.hasPosition())
+		{
+			return target.latLng();
+		}
+		return PlayerSrvc.OWN.latLng();
 	};
 
+	EffectSrvc.magicHTMLContent = function(data) {
+		return data.message;
+	};
 
+	////////////////
+	// Attack box //
+	////////////////
+	EffectSrvc.attackBox = function(attacker, defender, content) {
+		var points = [];
+		if (attacker) points.push(attacker.latLng());
+		if (defender) points.push(defender.latLng());
+		return EffectSrvc.attackBoxPos(MapUtil.middle(points), content);
+	};
+	
+	EffectSrvc.attackBoxPos = function(latLng, content) {
+		var attackBox = new google.maps.InfoWindow({
+			content: content,
+			position: latLng,
+		});
+		attackBox.open(MapUtil.map());
+		setTimeout(EffectSrvc.closeAttackBox.bind(EffectSrvc, attackBox), 10000);
+	};
+
+	EffectSrvc.closeAttackBox = function(attackBox) {
+		attackBox.setMap(null);
+		attackBox.close();
+	};
 	
 	return EffectSrvc;
 });

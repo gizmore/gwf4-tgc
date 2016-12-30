@@ -15,7 +15,7 @@ class TGC_Player extends GDO
 	private $water = 100, $tired = 0, $food = 100, $alc = 0, $frightened = 0, $endurance = 0;
 	
 	private $user = null;
-	private $lat = null, $lng = null, $moved = false;
+	private $lat = null, $lng = null, $radius = 10000.0, $moved = false;
 	private $base = array();
 	private $effects = array();
 	private $adjusted = array();
@@ -118,6 +118,8 @@ class TGC_Player extends GDO
 	public function maxMP() { return $this->power('max_mp'); }
 	
 	public function food() { return $this->food; }
+	public function giveFood($food) { $this->food = Common::clamp($this->food + $food, 0, $this->maxFood()); }
+	public function maxFood() { return 100; }
 	public function water() { return $this->water; }
 	public function giveWater($water) { $this->water = Common::clamp($this->water + $water, 0, $this->maxWater()); }
 	public function maxWater() { return $this->priestLevel() * 4; }
@@ -163,6 +165,7 @@ class TGC_Player extends GDO
 	public function dexterity() { return $this->power('dexterity'); }
 	public function wisdom() { return $this->power('wisdom'); }
 	public function intelligence() { return $this->power('intelligence'); }
+	public function radius() { return $this->radius; }
 	
 	public function fighter() { return $this->power('fighter'); }
 	public function ninja() { return $this->power('ninja'); }
@@ -588,8 +591,10 @@ class TGC_Player extends GDO
 	{
 		$this->giveEndurance($this->ninjaLevel());
 		$this->tired = Common::clamp($this->tired+1, 0, 100);
-		$this->food = Common::clamp($this->food-1, 0, 100);
-		$this->water = Common::clamp($this->water-1, 0, 100);;
+		$this->giveWater(-1);
+		$this->giveFood(-1);
+		$this->giveHP(ceil($this->fighterLevel()/2));
+		$this->giveMP(ceil($this->wizardLevel()/2));
 		$this->rehashFeels();
 	}
 	

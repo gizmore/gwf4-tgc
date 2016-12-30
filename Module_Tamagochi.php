@@ -10,6 +10,7 @@ require_once 'TGC_Attack.php';
 require_once 'magic/TGC_Spell.php';
 require_once 'magic/TGC_Potion.php';
 require_once 'server/TGC_AI.php';
+
 /**
  * @author gizmore
  * @license properitary / TGC
