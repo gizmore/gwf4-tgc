@@ -448,7 +448,11 @@ class TGC_Player extends GDO
 		foreach ($this->allFields() as $field)
 		{
 			$this->base[$field] = (int)$this->getVar('p_'.$field);
-			$this->adjusted[$field] = $this->base($field);
+		}
+		
+		foreach ($this->base as $field => $value)
+		{
+			$this->adjusted[$field] = $value;
 		}
 	}
 	
