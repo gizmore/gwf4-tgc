@@ -3,10 +3,14 @@ $lang = array(
 	'err_api_no_uid' => 'Missing uid parameter.', 
 		
 ###  SPELLS		
-	'spell_nothing_own' => 'You cast %1$s but nothing happens.',
-	'spell_nothing_me' => '%s casts %1$s on you but nothing happens.',
-	'spell_nothing_other' => 'You cast %1$s on %s but nothing happens.',
-	
+		'spell_nothing_own' => 'You cast %1$s but nothing happens.',
+		'spell_nothing_me' => '%s casts %1$s on you but nothing happens.',
+		'spell_nothing_other' => 'You cast %1$s on %s but nothing happens.',
+		
+	'potion_heal_own' => 'You brew %1$s and recovered by %3$s HP.',
+	'potion_heal_me' => '%1$s brews you a healing potion. You gain %3$s HP.',
+	'potion_heal_other' => '%s brews you a healing potion. You gain %3$s HP.',
+		
 	'spell_cockroach_own' => 'You cast Cockroach. Your scroll lock is disabled for %4$s.',
 	'spell_cockroach_me' => '%s casts Cockroach on you. Your scroll lock is disabled for %4$s.',
 	'spell_cockroach_other' => 'You cast Cokcroach on %s. Their scroll lock is disabled for %4$s.',

@@ -119,6 +119,8 @@ class TGC_Player extends GDO
 	
 	public function food() { return $this->food; }
 	public function water() { return $this->water; }
+	public function giveWater($water) { $this->water = Common::clamp($this->water + $water, 0, $this->maxWater()); }
+	public function maxWater() { return $this->priestLevel() * 4; }
 	public function gold() { return $this->getVar('p_gold'); }
 	
 	public function sumSkills() { return $this->fighter() + $this->ninja() + $this->priest() + $this->wizard(); }

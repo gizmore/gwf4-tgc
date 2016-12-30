@@ -54,13 +54,7 @@ final class TGC_Attack
 
 		# Deal damage
 		$damage = round($power);
-		$d->giveHP(-$damage);
-		if ($killed = $d->isDead())
-		{
-			$d->killedBy($a);
-			$loot = $this->getLoot();
-			$a->giveLoot($loot);
-		}
+		$killed = TGC_Kill::damage($a, $d, $damage, $loot);
 		
 		# Tell about slap.
 		printf("%s attacks %s with power %s: %s/%sHP left.\n", $a->displayName(), $d->displayName(), $power, $d->hp(), $d->maxHP());

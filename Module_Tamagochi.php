@@ -3,11 +3,12 @@ require_once 'util/TGC_Const.php';
 require_once 'util/TGC_Logic.php';
 require_once 'util/TGC_Position.php';
 require_once 'util/TGC_Race.php';
+require_once 'util/TGC_Kill.php';
 require_once 'TGC_Player.php';
 require_once 'TGC_Bot.php';
 require_once 'TGC_Attack.php';
-require_once 'spells/TGC_Spell.php';
-require_once 'spells/TGC_Potion.php';
+require_once 'magic/TGC_Spell.php';
+require_once 'magic/TGC_Potion.php';
 require_once 'server/TGC_AI.php';
 /**
  * @author gizmore
@@ -17,6 +18,7 @@ final class Module_Tamagochi extends GWF_Module
 {
 	private static $instance;
 	public static function instance() { return self::$instance; }
+	private $runes = null;
 	
 	##############
 	### Module ###
@@ -31,10 +33,13 @@ final class Module_Tamagochi extends GWF_Module
 	##############
 	### Config ###
 	##############
+	public function cfgRuneconfig() { return $this->initRunes(); }
+	public function cfgRunes() { $r = $this->initRunes(); return $r['runes']; }
+	public function cfgRunecost() { $r = $this->initRunes(); return $r['runecost']; }
 	public function cfgWelcomeMessage() { return $this->getModuleVar('tgc_welcome_msg', 'TGCv1'); }
 	public function cfgBots() { return $this->getModuleVarBool('tgc_bots', '1'); }
 	public function cfgMaxBots() { return $this->getModuleVarInt('tgc_max_bots', '5'); }
-	public function cfgMaxAssassinBots() { return $this->getModuleVarInt('tgc_max_assassin_bots', '1'); }
+	public function cfgMaxAssassinBots() { return $this->getModuleVarInt('tgc_max_assassin_bots', '3'); }
 	public function cfgMaxNimdaBots() { return $this->getModuleVarInt('tgc_max_nimda_bots', '0'); }
 	public function cfgMaxRobberBots() { return $this->getModuleVarInt('tgc_max_loser_bots', '0'); }
 	
@@ -44,12 +49,12 @@ final class Module_Tamagochi extends GWF_Module
 	public function onStartup()
 	{
 		self::$instance = $this;
+		$this->onLoadLanguage();
 		
 		if ( (!Common::isCLI()) && (!GWF_Website::isAjax()) )
 		{
 			GWF_Website::addJavascriptInline($this->getTGCConfigJS());
 			
-			$this->onLoadLanguage();
 			$this->onInclude();
 			
 			switch (GWF_DEFAULT_DESIGN)
@@ -66,15 +71,29 @@ final class Module_Tamagochi extends GWF_Module
 		}
 	}
 	
+	private function initRunes()
+	{
+		if (!$this->runes)
+		{
+			$path1 = GWF_PATH.'module/Tamagochi/magic/magic_config.php';
+			$path2 = GWF_PATH.'module/Tamagochi/magic/magic_config_example.php';
+			$path = GWF_File::isFile($path1) ? $path1 : $path2;
+			$this->runes = require($path);
+		}
+		return $this->runes;
+	}
+	
 	##############
 	### Assets ###
 	##############
 	private function getTGCConfigJS()
 	{
+		$this->initRunes();
 		$levels = GWF_Javascript::toJavascriptArray(TGC_Const::$LEVELS);
-		$runes = json_encode(TGC_Const::$RUNES);
+		$runes = json_encode($this->runes['runes']);
+		$runecost = json_encode($this->runes['runecost']);
 		$version = $this->getVersion();
-		return sprintf('window.TGC_CONFIG = { levels: %s, runes: %s, version: %0.2f };', $levels, $runes, $version);
+		return sprintf('window.TGC_CONFIG = { levels: %s, runes: %s, runecost: %s, version: %0.2f };', $levels, $runes, $runecost, $version);
 	}
 
 	private function includeWebAssets()
@@ -90,6 +109,10 @@ final class Module_Tamagochi extends GWF_Module
 		
 		# CSS
 		$this->addCSS('tamagochi.css');
+		# Filters
+		$this->addJavascript('filters/gwf-date-filter.js');
+		# Directives
+		$this->addJavascript('directives/tgc-stat-bar.js');
 		# Model
 		$this->addJavascript('model/tgc-player.js');
 		# Ctrl

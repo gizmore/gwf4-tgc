@@ -91,6 +91,7 @@ TGC.service('TGCCommandSrvc', function($rootScope, $injector, ErrorSrvc, Websock
 		var data = JSON.parse(payload);
 		CommandSrvc.getEffectSrvc().onGettingAttacked(data);
 		CommandSrvc.getPlayerSrvc().OWN.giveHP(-data.damage);
+		$rootScope.$apply();
 	};
 	
 	CommandSrvc.TGC_POS = function(payload) {
@@ -116,11 +117,12 @@ TGC.service('TGCCommandSrvc', function($rootScope, $injector, ErrorSrvc, Websock
 	
 	CommandSrvc.TGC_LVLUP = function(payload) {
 		console.log('CommandSrvc.TGC_LVLUP()', payload);
+		var data = JSON.parse(payload);
 		var PlayerSrvc = CommandSrvc.getPlayerSrvc();
 		var LevelupDlg = CommandSrvc.getLevelupDlg();
-		var data = JSON.parse(payload);
+		var player = PlayerSrvc.getPlayer(data.user_name);
 		PlayerSrvc.updateCacheForPlayer(player, data);
-		return LevelupDlg.open(PlayerSrvc.OWN, data);
+		return LevelupDlg.open(player, data);
 	};
 	
 	CommandSrvc.TGC_CHAT = function(payload) {
@@ -155,20 +157,28 @@ TGC.service('TGCCommandSrvc', function($rootScope, $injector, ErrorSrvc, Websock
 		}
 	};
 	
-	CommandSrvc.TGC_CAST = function(payload) {
-		var MapUtil = CommandSrvc.getMapUtil();
-		var ChatSrvc = CommandSrvc.getChatSrvc();
-		var PlayerSrvc = CommandSrvc.getPlayerSrvc();
+	CommandSrvc.TGC_MAGIC = function(payload) {
+		console.log('CommandSrvc.TGC_MAGIC()', payload);
 		var data = JSON.parse(payload);
-		console.log(data);
+		var MapUtil = CommandSrvc.getMapUtil();
+		var PlayerSrvc = CommandSrvc.getPlayerSrvc();
+		var EffectSrvc = CommandSrvc.getEffectSrvc();
+		
 		var OWN = PlayerSrvc.OWN;
-//		if (data.failed) {
-//		}
+		var PLAYER = PlayerSrvc.getPlayer(data.player);
+		var TARGET = PlayerSrvc.getPlayer(data.target);
 		if (data.code) {
 			eval(data.code);
 		}
-		if (data.message) {
-			ErrorSrvc.showMessage(data.message, 'Casting');
+		else if (data.player === OWN.name()) {
+			OWN.giveMP(-data.cost);
+			EffectSrvc.onCastSelf(data);
+		}
+		else if (data.target === OWN.name()) {
+			EffectSrvc.onCastOther(data);
+		}
+		else {
+			EffectSrvc.onCastArea(data);
 		}
 	};
 	

@@ -17,6 +17,7 @@ final class TGC_Commands extends GWS_Commands
 		$this->acc = GWF_Module::loadModuleDB('Account', true, true);
 // 		$this->changeNick = $this->modAccount->getMethod('ChangeGuestNickname');
 		TGC_Global::init(31337);
+		TGC_Spell::init();
 		$this->ai = new TGC_AI();
 		$this->ai->init($this);
 		$this->timer();
@@ -67,6 +68,18 @@ final class TGC_Commands extends GWS_Commands
 				'server_version' => $this->tgc->getVersion(),
 			));
 			GWS_Global::sendCommand($user, 'TGC_HELO', self::payload($payload, $mid));
+		}
+		catch (Exception $e) {
+			GWS_Global::sendError($user, $e->toString());
+		}
+	}
+	
+	public function cmd_tgcPause(GWF_User $user, $payload, $mid)
+	{
+		try {
+			$player = self::player($user);
+			$payload = json_encode($player->pauseDTO());
+			$player->sendCommand('TGC_PAUSE', $payload);
 		}
 		catch (Exception $e) {
 			GWS_Global::sendError($user, $e->toString());
@@ -162,33 +175,45 @@ final class TGC_Commands extends GWS_Commands
 		try {
 			$player = self::player($user);
 			$data = json_decode($payload);
-			if (!($p = self::playerNamed($data->target)))
+			if (!($target = self::playerNamed($data->target)))
 			{
 				return $player->sendError('ERR_UNKNOWN_PLAYER');
 			}
-			if ($potion = TGC_Potion::factory($player, $p, 'BREW', $data->runes, $mid))
+			if (!($potion = TGC_Potion::factory($player, $target, 'BREW', $data->runes, $mid)))
 			{
-				$potion->brew();
+				return $player->sendError('ERR_UNKNOWN_POTION');
 			}
+			$potion->brew();
 		}
 		catch (Exception $e) {
 			GWS_Global::sendError($user, $e->toString());
 		}
 	}
+
+// 	public function cmd_tgcCastLL(GWF_User $user, $payload, $mid)
+// 	{
+		
+// 	}
+	
+// 	public function cmdtgcCastLL(TGC_Player $player, $lat, $lng, $runes)
+// 	{
+		
+// 	}
 	
 	public function cmd_tgcCast(GWF_User $user, $payload, $mid)
 	{
 		try {
 			$player = self::player($user);
 			$data = json_decode($payload);
-			if (!($p = self::playerNamed($data->target)))
+			if (!($target = self::playerNamed($data->target)))
 			{
 				return $player->sendError('ERR_UNKNOWN_PLAYER');
 			}
-			if ($spell = TGC_Spell::factory($player, $p, 'CAST', $data->runes, $mid))
+			if (!($spell = TGC_Spell::factory($player, $target, 'CAST', $data->runes, $mid)))
 			{
-				$spell->cast();
+				return $player->sendError('ERR_UNKNOWN_SPELL');
 			}
+			$spell->cast();
 		}
 		catch (Exception $e) {
 			GWS_Global::sendError($user, $e->toString());

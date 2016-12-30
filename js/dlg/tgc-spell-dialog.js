@@ -50,8 +50,17 @@ TGC.service('SpellDlg', function($q, $mdDialog, ErrorSrvc, TGCCommandSrvc, Playe
 				$scope.data.selectedIDs = $scope.data.selectedIDs.slice(0, row);
 				$scope.data.selectedIDs.push(col);
 			};
-			$scope.numRunes = function() {
-				return $scope.data.selected.length;
+			$scope.spellCost = function() {
+				var cost = 0;
+				var costs = window.TGC_CONFIG.runecost;
+				var ids = $scope.data.selectedIDs;
+				for (var row in ids) {
+					cost += costs[row][ids[row]]
+				}
+				return cost;
+			};
+			$scope.remainingMP = function() {
+				return PlayerSrvc.OWN.mp() - $scope.spellCost();
 			};
 		}
 		var parentEl = angular.element(document.body);

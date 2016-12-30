@@ -29,6 +29,39 @@ HTML, BODY, #TGCMAP {
 	opacity: 0.4137;
 }
 
+/** Stats Bar **/
+tgc-stat-bar {
+	width: 100%;
+	min-width: 4em;
+	border: 1px solid black;
+	display: block;
+	position: relative;
+	height: 1.5em;
+}
+tgc-stat-bar label {
+	height: 1.5em;
+	text-align: left;
+	padding-left: 0.5em;
+	vertical-align: middle;
+}
+tgc-stat-bar left {
+	display: block;
+	position: absolute;
+	left: 0;
+	top: 0;
+	height: 100%;
+	width: 100%;
+}
+tgc-stat-bar right {
+	display: block;
+	position: absolute;
+	height: 100%;
+	top: 0;
+	right: 0;
+	background: black;
+	opacity: 0.5;
+}
+
 /** **/
 md-dialog-content > p {
 	padding: 2em 1.5em 0;

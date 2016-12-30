@@ -1,6 +1,6 @@
 'use strict';
 angular.module('gwf4')
-.service('EffectSrvc', function(PlayerSrvc, MapUtil, ShapeUtil) {
+.service('EffectSrvc', function(ErrorSrvc, PlayerSrvc, MapUtil, ShapeUtil) {
 	
 	var EffectSrvc = this;
 	
@@ -55,6 +55,27 @@ angular.module('gwf4')
 		damage = data.killed ? sprintf('<b>Killed</b> with %s!', damage) : sprintf('This caused %s.', damage);
 		return sprintf('%s %s %s %s with %s %s.<br/>%s', data.attacker, data.adverb, data.verb, data.defender, data.adjective, data.noun, damage);
 	}
+	
+	///////////
+	// Magic //
+	///////////
+	EffectSrvc.onCastFailed = function(data) {
+		console.log('EffectSrvc.onCastFailed()', data);
+	};
+
+	EffectSrvc.onCastSelf = function(data) {
+		console.log('EffectSrvc.onCastSelf()', data);
+		if (data.message) {
+			ErrorSrvc.showMessage(data.message, 'Casting');
+		}
+	};
+	EffectSrvc.onCastArea= function(data) {
+		console.log('EffectSrvc.onCastArea()', data);
+	};
+	EffectSrvc.onCastOther = function(data) {
+		console.log('EffectSrvc.onCastOther()', data);
+	};
+
 
 	
 	return EffectSrvc;

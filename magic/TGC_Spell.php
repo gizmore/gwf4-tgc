@@ -1,14 +1,18 @@
 <?php
-abstract class TGC_Spell
+class TGC_Spell
 {
+	public $type;
+	public $level; // 1st rune
+	public $runes;
+	public $cost;
+
 	public $player;
 	public $target;
-	public $type;
-	public $runes;
-	public $level;
+	
 	public $power;    // %2$s
 	public $effect;   // %3$s
 	public $duration; // %4$s
+
 	public $mid;
 	
 	private static $m;
@@ -16,18 +20,15 @@ abstract class TGC_Spell
 	#################
 	### Interface ###
 	#################
-	public abstract function getCodename(); # %1$s SpellName
-
-	public function getMinPower() { return 1; }
-	
 	public function getCode() { return ''; } # JS Code
+	
+	public function getCodename() { return 'generic'; }
+	public function getCodenameLowercase() { return strtolower($this->getCodename()); }
 
 	public function canTargetSelf() { return false; }
+	public function canTargetArea() { return false; }
 	public function canTargetOther() { return false; }
 
-	public function beforeCast() {}
-	public function afterCast() {}
-	
 	public function ownMessage() { return self::$m->lang('spell_'.$this->getCodenameLowercase().'_own', array($this->getCodename(), $this->power, $this->effect, $this->duration)); }
 	public function meMessage() { return self::$m->lang('spell_'.$this->getCodenameLowercase().'_me', array($this->power, $this->power, $this->effect, $this->duration)); }
 	public function otherMessage() { return self::$m->lang('spell_'.$this->getCodenameLowercase().'_other', array($this->power, $this->power, $this->effect, $this->duration)); }
@@ -38,41 +39,68 @@ abstract class TGC_Spell
 	public function valid() { return $this->runes !== false; }
 	public function getSkill() { return $this->type === 'BREW' ? 'priest' : 'wizard'; }
 	public function getSpellName() { return implode('', array_slice($this->runes, 1)); }
-	public function getCodenameLowercase() { return strtolower($this->getCodename()); }
 	
 	###############
 	### Factory ###
 	###############
-	public static function factory(TGC_Player $player, TGC_Player $target, $type, $runes, $mid)
+	public static function init()
 	{
 		self::$m = Module_Tamagochi::instance();
-		
-		$runes = explode(',', preg_replace('/[^A-Z,]/', '', $runes));
-		$withoutFirst = array_slice($runes, 1);
-		$classname = implode('', $withoutFirst);
-		$filename = GWF_CORE_PATH."module/Tamagochi/spells/$classname.php";
-		if (file_exists($filename) && is_file($filename))
+		GWF_File::filewalker(GWF_PATH.'module/Tamagochi/magic/potion', array(__CLASS__, 'loadSpell'));
+		GWF_File::filewalker(GWF_PATH.'module/Tamagochi/magic/spell', array(__CLASS__, 'loadSpell'));
+	}
+	
+	public static function loadSpell($entry, $path)
+	{
+		require_once $path;
+	}
+	
+	public static function validRunes(array $runes)
+	{
+		$row = 0;
+		foreach ($runes as $rune)
 		{
-			require_once $filename;
+			if (!self::validRune($rune, $row++))
+			{
+				return false;
+			}
+		}
+		return true;
+	}
+	
+	public static function validRune($rune, $row)
+	{
+		$runes = self::$m->cfgRunes();
+		$len = count($runes[$row]);
+		for ($i = 0; $i < $len; $i++)
+		{
+			if ($runes[$row][$i] === $rune)
+			{
+				return $i+1;
+			}
+		}
+		return false;
+	}
+	
+	public static function factory(TGC_Player $player, $target, $type, $runes, $mid)
+	{
+		$runes = explode(',', preg_replace('/[^A-Z,]/', '', strtoupper($runes)));
+		$withoutFirst = array_slice($runes, 1);
+		if (self::validRunes($runes))
+		{
+			$runecfg = self::$m->cfgRuneconfig();
+			$valid = $runecfg[$type];
+			$classname = isset($valid[implode(',', $withoutFirst)]) ? $valid[implode(',', $withoutFirst)] : __CLASS__;
 			$spell = new $classname($player, $target, $type, $runes, $mid);
 			if ($spell->valid())
 			{
 				return $spell;
 			}
-			else
-			{
-				$player->sendError('ERR_UNKNOWN_SPELL');
-				return false;
-			}
 		}
-		else
-		{
-			$player->sendError('ERR_UNKNOWN_SPELL');
-			return false;
-		}
+		return false;
 	}
 	
-	public function __construct(TGC_Player $player, TGC_Player $target, $type, $runes, $mid)
+	public function __construct(TGC_Player $player, $target, $type, $runes, $mid)
 	{
 		$this->player = $player;
 		$this->target = $target;
@@ -87,6 +115,8 @@ abstract class TGC_Spell
 	{
 		$back = array();
 		$row = 0;
+		$this->cost = 0;
+		$runecost = self::$m->cfgRunecost();
 		foreach ($runes as $rune)
 		{
 			if (false === ($level = $this->validRune($rune, $row)))
@@ -98,29 +128,19 @@ abstract class TGC_Spell
 			{
 				$this->level = $level;
 			}
+			$this->cost += $runecost[$row][$level-1];
 			$row++;
 		}
 		return $back;
 	}
-	
-	private function validRune($rune, $row)
+
+	private function dicePower()
 	{
-		$len = count(TGC_Const::$RUNES[$row]);
-		for ($i = 0; $i < $len; $i++)
-		{
-			if (TGC_Const::$RUNES[$row][$i] === $rune)
-			{
-				return $i+1;
-			}
-		}
-		return false;
-	}
-	
-	public function dicePower()
-	{
-		$this->power = TGC_Logic::dice(1, 20 * $this->level * $this->player->wizardLevel());
-		$this->effect = round($this->power / 10.0);
-		$this->duration = 10 + $this->power;
+		$wl = $this->player->wizardLevel();
+		$appropiate = Common::clamp( ($wl / ($this->level + 1.0)), 0.0, 1.0);
+		$this->power = TGC_Logic::dice($this->level, $this->level * ceil($wl / 3));
+// 		$this->effect = round($this->power / 10.0);
+// 		$this->duration = 10 + $this->power;
 	}
 	
 	#################
@@ -128,12 +148,13 @@ abstract class TGC_Spell
 	#################
 	private function failedOfDifficulty()
 	{
-		$minPower = (int) Common::Clamp($this->getMinPower(), 1);
-		$minPower = 20 * $this->level + $minPower;
-		echo "LEVEL: $this->level\n";
-		echo "POWER: $this->power\n";
-		echo "MIN POWER: $minPower\n";
-		return $this->power >= $minPower;
+		
+// 		$minPower = (int) Common::Clamp($this->getMinPower(), 1);
+// 		$minPower = 20 * $this->level + $minPower;
+// 		echo "LEVEL: $this->level\n";
+// 		echo "POWER: $this->power\n";
+// 		echo "MIN POWER: $minPower\n";
+// 		return $this->power >= $minPower;
 	}
 	
 	private function giveXP($multi=1.0)
@@ -144,33 +165,56 @@ abstract class TGC_Spell
 	############
 	### Cast ###
 	############
+	private function drawMP()
+	{
+		if ($this->player->mp() >= $this->cost)
+		{
+			$this->player->giveMP(-$this->cost);
+			return true;
+		}
+		return false;
+	}
+
 	private function defaultPayload($json, $message=null, $code='')
 	{
 		return json_encode(array_merge(array(
-				'spell' => $this->getSpellName(),
-				'player' => $this->player->getName(),
-				'target' => $this->target->getName(),
-				'runes' => implode(',', $this->runes),
-				'level' => $this->level,
-				'power' => $this->power,
-				'message' => $message,
-				'code' => $code,
+			'spell' => $this->getSpellName(),
+			'player' => $this->player->getName(),
+			'target' => $this->target->getName(),
+			'runes' => implode(',', $this->runes),
+			'level' => $this->level,
+			'power' => $this->power,
+			'message' => $message,
+			'cost' => $this->cost,
+			'code' => $code,
 		), $json));
 	}
 	
 	public function brew()
 	{
-		$this->player->sendError('ERR_NO_BREW');
+		return $this->player->sendError('ERR_NO_BREW');
 	}
 	
 	public function cast()
 	{
 		$this->spell();
 	}
-
+	
 	public function spell()
 	{
-		if ($this->target == $this->player)
+		if (!$this->drawMP())
+		{
+			return $this->player->sendError('ERR_NO_MP');
+		}
+		
+		if (!($this->target instanceof TGC_Player))
+		{
+			if (!$this->canTargetArea())
+			{
+				return $this->player->sendError('ERR_NO_AREA');
+			}
+		}
+		else if ($this->target === $this->player)
 		{
 			if (!$this->canTargetSelf())
 			{
@@ -204,9 +248,7 @@ abstract class TGC_Spell
 		else
 		{
 			$this->giveXP(1.00);
-			$this->beforeCast();
 			$this->executeSpell();
-			$this->afterCast();
 		}
 	}
 	
@@ -231,23 +273,28 @@ abstract class TGC_Spell
 		}
 	}
 	
+	public function executeDefaultBrew($json=array())
+	{
+		$this->executeDefaultCast($json);
+	}
+	
 	public function executeDefaultCast($json=array())
 	{
 		if ($this->player === $this->target)
 		{
-			$this->ownCast($this->getCodename(), $this->ownMessage(), $this->getCode(), $json);
+			$this->ownCast($this->getSpellName(), $this->ownMessage(), $this->getCode(), $json);
 		}
 		else
 		{
-			$this->playerCast($this->getCodename(), $this->meMessage(), '', $json);
-			$this->targetCast($this->getCodename(), $this->otherMessage(), $this->getCode(), $json);
+			$this->playerCast($this->getSpellName(), $this->meMessage(), '', $json);
+			$this->targetCast($this->getSpellName(), $this->otherMessage(), $this->getCode(), $json);
 		}
 	}
 	
 	public function ownCast($codename, $message=null, $code='', $json=array())
 	{
 		$payload = $this->defaultPayload($json, $message, $code);
-		$this->player->sendCommand($this->type, TGC_Commands::payload($payload, $this->mid));
+		$this->player->sendCommand('TGC_MAGIC', TGC_Commands::payload($payload, $this->mid));
 	
 	}
 	
@@ -260,7 +307,7 @@ abstract class TGC_Spell
 	public function targetCast($codename, $message=null, $code='', $json=array())
 	{
 		$payload = $this->defaultPayload($json, $message, $code);
-		$this->target->sendCommand($this->type, TGC_Commands::payload($payload, $this->mid));
+		$this->target->sendCommand('TGC_MAGIC', TGC_Commands::payload($payload, $this->mid));
 	
 	}
 	

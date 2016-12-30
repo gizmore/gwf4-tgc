@@ -1,11 +1,11 @@
 <md-dialog aria-label="Player dialog">
 	<md-dialog-content layout-padding>
 		
-		<p>{{player.displayName()}} registered {{player.registeredAt()|date}}</p>
+		<p>{{player.displayName()}} registered {{player.registeredAt()|gwfDate}}</p>
 		
 		<div ng-hide="!player.isOwn()">
-			<p>{{player.hp()}} / {{player.maxHP()}} HP</p> 
-			<p>{{player.mp()}} / {{player.maxMP()}} MP</p>
+			<div><tgc-stat-bar min="0" ng-max="player.maxHP()" ng-value="player.hp()" color="red" label="HP"></tgc-stat-bar></div>
+			<div><tgc-stat-bar min="0" ng-max="player.maxMP()" ng-value="player.mp()" color="blue" label="MP"></tgc-stat-bar></div>
 		</div> 
 		
 		<md-list>

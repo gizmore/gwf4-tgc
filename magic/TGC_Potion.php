@@ -3,6 +3,7 @@ abstract class TGC_Potion extends TGC_Spell
 {
 	public function canTargetSelf() { return true; }
 	public function canTargetOther() { return true; }
+	public function waterCost() { return 1; }
 
 	public function dicePower()
 	{
@@ -11,11 +12,27 @@ abstract class TGC_Potion extends TGC_Spell
 	
 	public function brew()
 	{
-		$this->spell();
+		if ($this->player->water() >= $this->waterCost())
+		{
+			$this->player->giveWater($this->waterCost());
+			$this->spell();
+		}
+		else
+		{
+			$this->player->sendError('ERR_NO_WATER');
+		}
 	}
 	
 	public function cast()
 	{
 		$this->player->sendError('ERR_NO_CAST');
 	}
+	
+#####
+
+	public function executeSpell()
+	{
+		$this->executeDefaultBrew();
+	}
+	
 }
