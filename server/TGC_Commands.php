@@ -80,6 +80,37 @@ final class TGC_Commands extends GWS_Commands
 		}
 	}
 	
+	public function cmd_tgcGames(GWF_User $user, $payload, $mid)
+	{
+		try {
+			$player = self::player($user);
+			$data = json_decode($payload);
+			$payload = json_encode(TGC_Games::allGamesDTO());
+			GWS_Global::sendCommand($user, 'TGC_GAMES', self::payload($payload, $mid));
+		}
+		catch (Exception $e) {
+			GWS_Global::sendError($user, $e->toString());
+		}
+	}
+	
+	public function cmd_tgcJoinGame(GWF_User $user, $payload, $mid)
+	{
+		try {
+			$player = self::player($user);
+			$data = json_decode($payload);
+			$game = TGC_Games::game($data->game_id);
+			if (false !== ($error = TGC_Games::join($player, $game)))
+			{
+				return $player->sendError($error);
+			}
+			$payload = json_encode($game->joinDTO());
+			GWS_Global::sendCommand($user, 'TGC_JOIN_GAME', self::payload($payload, $mid));
+		}
+		catch (Exception $e) {
+			GWS_Global::sendError($user, $e->toString());
+		}
+	}
+	
 	public function cmd_tgcRace(GWF_User $user, $payload, $mid)
 	{
 		try {

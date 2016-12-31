@@ -12,6 +12,7 @@ require_once 'util/TGC_Race.php';
 require_once 'util/TGC_Kill.php';
 require_once 'util/TGC_Levelup.php';
 require_once 'util/TGC_PlayerFactory.php';
+require_once 'map/TGC_Games.php';
 
 /**
  * @author gizmore

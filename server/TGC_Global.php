@@ -8,6 +8,8 @@ final class TGC_Global
 	public static $AVG_BASE = array();
 	public static $AVG_ADJUST = array();
 	
+	public static $GAMES;
+	
 	public static function init($seed)
 	{
 		self::$TICK = 0;
@@ -17,7 +19,8 @@ final class TGC_Global
 		{
 			self::$TYPED_BOTS[$type] = array();
 		}
-		
+		self::$GAMES = new TGC_Games();
+		$game = self::$GAMES->createGame();
 	}
 
 	############

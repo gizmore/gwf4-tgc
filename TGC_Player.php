@@ -16,6 +16,11 @@ class TGC_Player extends GDO
 	
 	private $user = null, $baseLevel = 1, $adjustedLevel = 1;
 	private $lat = null, $lng = null, $radius = 10000.0, $moved = false;
+	
+	public $game, $x, $y, $z;
+	
+	
+	
 	private $base = array();
 	private $effects = array();
 	private $adjusted = array();
@@ -223,8 +228,7 @@ class TGC_Player extends GDO
 		);
 	}
 	
-	public function pauseDTO()
-	{
+	public function pauseDTO() {
 		return array();
 	}
 	

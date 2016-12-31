@@ -28,10 +28,10 @@ final class TGC_Const
 // 	public static $TERRAINS = array(self::NONE, self::STEPPE, self::FOREST, self::HILLS, self::MOUNTAINS);
 	
 	const FIRE = 'fire';
-	const WATER = 'water';
 	const WIND = 'wind';
 	const EARTH = 'earth';
-	public static $ELEMENTS = array(self::NONE, self::FIRE, self::WATER, self::WIND, self::EARTH);
+	const WATER = 'water';
+	public static $ELEMENTS = array(self::NONE, self::FIRE, self::WIND, self::EARTH, self::WATER);
 	
 	
 	const NEOPHYTE = 'neophyte';
