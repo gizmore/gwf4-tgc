@@ -19,8 +19,8 @@ final class TGC_Global
 		{
 			self::$TYPED_BOTS[$type] = array();
 		}
-		self::$GAMES = new TGC_Games();
-		$game = self::$GAMES->createGame();
+// 		self::$GAMES = new TGC_Games();
+// 		$game = self::$GAMES->createGame();
 	}
 
 	############

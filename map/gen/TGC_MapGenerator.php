@@ -38,10 +38,9 @@ final class TGC_MapGenerator
 		
 		$this->randomizedPrimeWalls();
 		$this->cleanupGenFlags();
-
+		
 		$this->game->map()->addFloor($this->floor);
 		$this->floor->debugWalls();
-		die();
 	}
 	
 	#############
